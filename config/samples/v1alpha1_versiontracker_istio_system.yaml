@@ -1,0 +1,27 @@
+---
+apiVersion: opvic.skillz.com/v1alpha1
+kind: VersionTracker
+metadata:
+ name: istio-system # name of the subject (must be unique across the cluster)
+spec:
+  name: istio-system # Name of the app to track
+  resources:
+    namespaces:
+      - istio-system
+    selector: # selector is used to select the resources to track
+      matchLabels:
+        app: istiod
+      matchExpressions:
+      - key: istio.io/rev
+        operator: Exists
+  localVersion:
+   strategy: ImageTag
+  remoteVersion:
+    provider: github
+    strategy: tags
+    repo: istio/istio
+    extraction:
+      regex:
+        pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
+        result: $1
+    constraint: '>= 1.1.0'

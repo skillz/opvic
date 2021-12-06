@@ -1,0 +1,25 @@
+---
+apiVersion: opvic.skillz.com/v1alpha1
+kind: VersionTracker
+metadata:
+ name: istio-sidecar # name of the subject (must be unique across the cluster)
+spec:
+  name: istio-sidecar # Name of the app to track
+  resources:
+    selector: # selector is used to select the resources to track
+      matchExpressions:
+      - key: istio.io/rev
+        operator: Exists
+      - key: istio
+        operator: DoesNotExist
+  localVersion:
+   strategy: ImageTag
+  remoteVersion:
+    provider: github
+    strategy: tags
+    repo: istio/istio
+    extraction:
+      regex:
+        pattern: '^([0-9]+\.[0-9]+\.[0-9]+)$'
+        result: $1
+    constraint: '>= 1.0.0'

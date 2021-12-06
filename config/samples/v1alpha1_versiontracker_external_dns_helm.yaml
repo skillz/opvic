@@ -1,0 +1,23 @@
+apiVersion: opvic.skillz.com/v1alpha1
+kind: VersionTracker
+metadata:
+ name: external-dns-helm
+spec:
+  name: external-dns-helm
+  resources:
+    namespaces:
+      - cluster-addon-external-dns
+    selector:
+      matchLabels:
+        app.kubernetes.io/name: external-dns
+  localVersion:
+   strategy: FieldSelection
+   fieldSelector: .metadata.labels.helm\.sh\/chart
+   extraction:
+     regex:
+       pattern: '^external-dns-(.*)'
+       result: $1
+  remoteVersion:
+   provider: helm
+   repo: https://charts.bitnami.com/bitnami
+   chart: external-dns
