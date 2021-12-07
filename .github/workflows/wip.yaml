@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - '**.go'
+      - "go.mod"
+      - "go.sum"
       - 'Dockerfile'
       - 'Dockerfile.agent'
   pull_request:
