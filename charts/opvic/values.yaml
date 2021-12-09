@@ -14,6 +14,31 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+secrets:
+  authToken: ""
+  githubToken: ""
+  githubAppId: ""
+  githubAppInstallationId: ""
+  githubAppPrivateKey: ""
+
+# control plane
+isControlPlane: false
+controlPlaneBindAddress: ""
+cacheExpiration: ""
+cacheReconcilerInterval: ""
+
+
+# agent
+isAgent: false
+metricsBindAddress: ""
+healthProbeBindAddress: ""
+agentIdentifier: ""
+agentInterval: ""
+agentTags: ""
+controlPlaneURL: ""
+logDevelopment: ""
+
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true

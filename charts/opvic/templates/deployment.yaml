@@ -33,6 +33,61 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          {{- if .Values.isControlPlane }}
+          - name: CONTROLPLANE_BIND_ADDRESS
+            value: {{ .Values.controlPlaneBindAddress }}
+          - name: CONTROLPLANE_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "opvic.fullname" . }}-secrets
+                key: authToken
+          - name: PROVIDER_GITHUB_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "opvic.fullname" . }}-secrets
+                key: githubToken
+          - name: PROVIDER_GITHUB_GITHUB_APP_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "opvic.fullname" . }}-secrets
+                key: githubAppId
+          - name: PROVIDER_GITHUB_APP_INSTALLATION_ID
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "opvic.fullname" . }}-secrets
+                key: githubAppInstallationId
+          - name: PROVIDER_GITHUB_APP_PRIVATE_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "opvic.fullname" . }}-secrets
+                key: githubAppPrivateKey
+          - name: CACHE_EXPIRATION
+            value: {{ .Values.cacheExpiration }}
+          - name: CACHE_RECONCILER_INTERVAL
+            value: {{ .Values.cacheReconcilerInterval }}
+          {{- end }}
+          {{- if .Values.isAgent }}
+          - name: METRICS_BIND_ADDRESS
+            value: {{ .Values.metricsBindAddress }}
+          - name: HEALTH_PROBE_BIND_ADDRESS
+            value: {{ .Values.healthProbeBindAddress }}
+          - name: AGENT_IDENTIFIER
+            value: {{ .Values.agentIdentifier }}
+          - name: AGENT_INTERVAL
+            value: {{ .Values.agentInterval }}
+          - name: AGENT_TAGS
+            value: {{ .Values.agentTags }}
+          - name: CONTROLPLANE_URL
+            value: {{ .Values.controlPlaneURL }}
+          - name: CONTROLPLANE_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ include "opvic.fullname" . }}-secrets
+                key: token
+          - name: LOG_DEVELOPMENT
+            value: {{ .Values.logDevelopment }}
+          {{- end }}
           ports:
             - name: http
               containerPort: 80
