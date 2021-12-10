@@ -12,7 +12,7 @@ const (
 )
 
 var (
-	commonLabels = []string{"id", "agent_id", "running_version", "resource_kind", "remote_provider", "remote_repo"}
+	commonLabels = []string{"version_id", "agent_id", "running_version", "resource_kind", "remote_provider", "remote_repo"}
 )
 
 func newMetric(metricName string, docString string, commonLabelsNames []string, labelNames []string) *prometheus.Desc {
@@ -26,7 +26,7 @@ var (
 	availableMinorVersionMetric = newMetric("minor_versions_count", "Number of available minor versions to upgrade to", commonLabels, []string{"available_minor_versions"})
 	availablePatchVersionMetric = newMetric("patch_versions_count", "Number of available patch versions to upgrade to", commonLabels, []string{"available_patch_versions"})
 
-	agentMetric = newMetric("agent_last_heartbeat", "Last time the agent was seen", []string{}, []string{"id", "tags"})
+	agentMetric = newMetric("agent_last_heartbeat", "Last time the agent was seen", []string{}, []string{"agent_id", "tags"})
 )
 
 func (cp *ControlPlane) Describe(ch chan<- *prometheus.Desc) {
