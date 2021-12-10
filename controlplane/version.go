@@ -1,12 +1,15 @@
 package controlplane
 
 import (
+	"fmt"
+
 	api "github.com/skillz/opvic/controlplane/api/v1alpha1"
 	"github.com/skillz/opvic/controlplane/version"
 	"github.com/skillz/opvic/utils"
 )
 
 func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectVersion) (api.VersionInfos, error) {
+	var latest string
 	Remoteversions, err := cp.provider.GetVersions(ver.RemoteVersion)
 	if err != nil {
 		return api.VersionInfos{}, err
@@ -15,11 +18,18 @@ func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectV
 	if err != nil {
 		return api.VersionInfos{}, err
 	}
+	if len(Remoteversions) == 0 {
+		fmt.Printf("No remote versions found for %s. check the remoteVersion config\n", ver.ID)
+		latest = ""
+	} else {
+		latest = subV.Latest().String()
+	}
+
 	verInfos := api.VersionInfos{
 		ID:             ver.ID,
 		AgentID:        agentID,
 		ResourceCount:  ver.ResourceCount,
-		LatestVersion:  subV.Latest().String(),
+		LatestVersion:  latest,
 		RemoteProvider: ver.RemoteVersion.Provider,
 		RemoteRepo:     ver.RemoteVersion.Repo,
 	}
@@ -30,7 +40,7 @@ func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectV
 			ResourceCount:     v.ResourceCount,
 			ResourceKind:      v.ResourceKind,
 			ExtractedFrom:     v.ExtractedFrom,
-			LatestVersion:     subV.Latest().String(),
+			LatestVersion:     latest,
 			AvailableVersions: subV.GreaterThan().StringList(),
 			AvailableMajors:   subV.MajorGreaterThan().StringList(),
 			AvailableMinors:   subV.MinorGreaterThan().StringList(),
