@@ -9,6 +9,7 @@ bin
 testbin/*
 gin-bin
 tmp/**
+deploy/**
 
 # Test binary, build with `go test -c`
 *.test
