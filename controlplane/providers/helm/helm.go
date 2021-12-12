@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-logr/logr"
 	"github.com/patrickmn/go-cache"
 	"github.com/skillz/opvic/agent/api/v1alpha1"
 	"github.com/skillz/opvic/utils"
@@ -23,14 +24,16 @@ type Index struct {
 }
 
 type Provider struct {
-	Client *http.Client
+	client *http.Client
 	cache  *cache.Cache
+	log    logr.Logger
 }
 
-func NewProvider(cache *cache.Cache) *Provider {
+func NewProvider(cache *cache.Cache, logger logr.Logger) *Provider {
 	return &Provider{
-		Client: &http.Client{Timeout: 30 * time.Second},
+		client: &http.Client{Timeout: 30 * time.Second},
 		cache:  cache,
+		log:    logger,
 	}
 }
 
@@ -52,12 +55,15 @@ func AppendIndex(repo string) string {
 }
 
 func (p *Provider) GetIndex(repo string) (*Index, error) {
+	log := p.log.WithValues("repo", repo)
 	indexCache, ok := p.GetCacheValue(ReleasesCacheKey(repo))
 	if ok {
+		log.Info("found index in cache")
 		return indexCache.(*Index), nil
 	}
+	log.Info("getting index from remote")
 	url := AppendIndex(repo)
-	resp, err := p.Client.Get(url)
+	resp, err := p.client.Get(url)
 	if err != nil {
 		return nil, err
 	}

@@ -18,11 +18,13 @@ package main
 
 import (
 	"os"
+	"regexp"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
+	zaplib "go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
@@ -36,9 +38,16 @@ import (
 	//+kubebuilder:scaffold:imports
 )
 
+const (
+	logLevelDebug = "debug"
+	logLevelInfo  = "info"
+	logLevelWarn  = "warn"
+	logLevelError = "error"
+)
+
 var (
 	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	setupLog = ctrl.Log.WithName("opvic-agent-setup")
 
 	metricsAddr           = kingpin.Flag("metrics-bind-address", "The address the metric endpoint binds to.").Envar("METRICS_BIND_ADDRESS").Default(":8081").String()
 	probeAddr             = kingpin.Flag("health-probe-bind-address", "The address the probe endpoint binds to.").Envar("HEALTH_PROBE_BIND_ADDRESS").Default(":8082").String()
@@ -47,7 +56,7 @@ var (
 	agentTags             = kingpin.Flag("agent.tags", "key:value pair to add to the agent tags. (you can pass this flag multiple times").Envar("AGENT_TAGS").PlaceHolder("KEY:VALUE").StringMap()
 	controlPlaneUrl       = kingpin.Flag("controlplane.url", "Control Plane URL").Envar("CONTROLPLANE_URL").PlaceHolder("http(s)://CONTROLPLANE-ADDRESS").String()
 	controlPlaneAuthToken = kingpin.Flag("controlplane.auth-token", "Control Plane Shared Auth Token").Envar("CONTROLPLANE_AUTH_TOKEN").String()
-	logDevelopment        = kingpin.Flag("log.development", "Enable development logging").Envar("LOG_DEVELOPMENT").Default("false").Bool()
+	logLevel              = kingpin.Flag("log.level", "The verbosity of the logging. Valid values are `debug`, `info`, `warn`, `error`").Envar("LOG_LEVEL").Default("info").String()
 )
 
 func init() {
@@ -61,11 +70,23 @@ func main() {
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
 
-	opts := zap.Options{
-		Development: *logDevelopment,
-	}
+	logger := zap.New(func(o *zap.Options) {
+		switch *logLevel {
+		case logLevelDebug:
+			o.Development = true
+		case logLevelInfo:
+			lvl := zaplib.NewAtomicLevelAt(zaplib.InfoLevel)
+			o.Level = &lvl
+		case logLevelWarn:
+			lvl := zaplib.NewAtomicLevelAt(zaplib.WarnLevel)
+			o.Level = &lvl
+		case logLevelError:
+			lvl := zaplib.NewAtomicLevelAt(zaplib.ErrorLevel)
+			o.Level = &lvl
+		}
+	})
 
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	ctrl.SetLogger(logger)
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:                 scheme,
@@ -78,6 +99,12 @@ func main() {
 		os.Exit(1)
 	}
 
+	// validate the Agent ID. it should not contain any special characters
+	regex := regexp.MustCompile(`^[a-zA-Z0-9\-]+$`)
+	if !regex.MatchString(*agentID) {
+		setupLog.Error(err, "invalid agent identifier. it should not contain any special characters or spaces")
+		os.Exit(1)
+	}
 	conf := &agent.Config{
 		Interval:              *agentInterval,
 		ID:                    *agentID,
@@ -87,7 +114,7 @@ func main() {
 	}
 	if err = (&agent.VersionTrackerReconciler{
 		Client: mgr.GetClient(),
-		Log:    ctrl.Log,
+		Log:    ctrl.Log.WithName("opvic-agent"),
 		Scheme: mgr.GetScheme(),
 		Config: conf,
 	}).SetupWithManager(mgr); err != nil {

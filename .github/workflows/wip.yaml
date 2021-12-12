@@ -13,6 +13,12 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - '**.go'
+      - "go.mod"
+      - "go.sum"
+      - 'Dockerfile'
+      - 'Dockerfile.agent'
 
 jobs:
   control-plane:

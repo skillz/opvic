@@ -105,8 +105,7 @@ func (r *VersionTrackerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 			return ctrl.Result{}, err
 		}
 	}
-	log.Info("done reconciling", "duration", elapsed)
-	log.Info("next reconciliation in", "interval", r.Config.Interval)
+	log.Info("done reconciling", "interval", r.Config.Interval)
 
 	return ctrl.Result{
 		RequeueAfter: r.Config.Interval,

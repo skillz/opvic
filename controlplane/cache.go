@@ -2,7 +2,6 @@ package controlplane
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/jasonlvhit/gocron"
@@ -134,12 +133,15 @@ func (cp *ControlPlane) UpdateAgentSubjectVersionsList(agentId, versionId string
 }
 
 func (cp *ControlPlane) CacheReconcile() {
-	fmt.Println("Reconciling cache")
+	log := cp.log.WithName("cache-reconcile")
+	log.V(1).Info("starting cache reconcile")
+
 	cp.cache.DeleteExpired()
 	cp.AgentListCacheReconcile()
 	cp.AgentCacheReconcile()
 	cp.SubjectVersionInfoCacheReconcile()
-	fmt.Println("Cache reconciled")
+
+	log.V(1).Info("finished cache reconcile", "interval", cp.cacheReconcilerInterval.String())
 }
 
 func (cp *ControlPlane) AgentListCacheReconcile() {
@@ -176,7 +178,10 @@ func (cp *ControlPlane) SubjectVersionInfoCacheReconcile() {
 			for _, ver := range appvers {
 				verInfos, err := cp.GetSubjectVersionInfos(agent, ver)
 				if err != nil {
-					log.Printf("Error getting subject version info: %s", err)
+					cp.log.Error(
+						err, "error getting subject version info",
+						"version_id", ver.ID,
+					)
 					continue
 				}
 				cp.SetSubjectVersionInfoCache(agent, ver.ID, verInfos)

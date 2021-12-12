@@ -19,10 +19,20 @@ package main
 import (
 	"os"
 
+	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/skillz/opvic/controlplane"
 	"github.com/skillz/opvic/controlplane/providers/github"
+	zaplib "go.uber.org/zap"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+)
+
+const (
+	logLevelDebug = "debug"
+	logLevelInfo  = "info"
+	logLevelWarn  = "warn"
+	logLevelError = "error"
 )
 
 var (
@@ -34,11 +44,31 @@ var (
 	providerGithubAppPrivateKey  = kingpin.Flag("provider.github.app-private-key", "Github APP Private Key for github provider").Envar("PROVIDER_GITHUB_APP_PRIVATE_KEY").Default("").String()
 	cacheExpiration              = kingpin.Flag("cache.expiration", "Cache expiration duration").Envar("CACHE_EXPIRATION").Default("1h").Duration()
 	cacheReconcilerInterval      = kingpin.Flag("cache.reconciler-interval", "Cache reconciler interval").Envar("CACHE_RECONCILER_INTERVAL").Default("30s").Duration()
+	logLevel                     = kingpin.Flag("log.level", "The verbosity of the logging. Valid values are `debug`, `info`, `warn`, `error`").Envar("LOG_LEVEL").Default("info").String()
+	logHttpRequests              = kingpin.Flag("log.http-requests", "Enable HTTP request logging").Envar("LOG_HTTP_REQUESTS").Default("false").Bool()
 )
 
 func main() {
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
+
+	logger := zap.New(func(o *zap.Options) {
+		gin.SetMode(gin.ReleaseMode)
+		switch *logLevel {
+		case logLevelDebug:
+			gin.SetMode(gin.DebugMode)
+			o.Development = true
+		case logLevelInfo:
+			lvl := zaplib.NewAtomicLevelAt(zaplib.InfoLevel)
+			o.Level = &lvl
+		case logLevelWarn:
+			lvl := zaplib.NewAtomicLevelAt(zaplib.WarnLevel)
+			o.Level = &lvl
+		case logLevelError:
+			lvl := zaplib.NewAtomicLevelAt(zaplib.ErrorLevel)
+			o.Level = &lvl
+		}
+	})
 
 	ghConf := github.Config{
 		Token:             *providerGithubToken,
@@ -53,9 +83,12 @@ func main() {
 		GithubConfig:            &ghConf,
 		CacheExpiration:         *cacheExpiration,
 		CacheReconcilerInterval: *cacheReconcilerInterval,
+		LogHttpRequests:         *logHttpRequests,
+		Logger:                  logger.WithName("opvic-control-plane"),
 	}
 	cp, err := conf.NewControlPlane()
 	if err != nil {
+		logger.Error(err, "unable to create the control plane")
 		os.Exit(1)
 	}
 	prometheus.MustRegister(cp)

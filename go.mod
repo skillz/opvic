@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/bradleyfalzon/ghinstallation v1.1.1
-	github.com/gin-gonic/gin v1.7.4
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-logr/logr v0.4.0
 	github.com/google/go-github/v39 v39.2.0
 	github.com/google/uuid v1.2.0 // indirect
@@ -16,6 +16,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.11.0
 	github.com/spf13/cobra v1.2.1 // indirect
+	go.uber.org/zap v1.19.1
 	golang.org/x/net v0.0.0-20210913180222-943fd674d43e // indirect
 	golang.org/x/oauth2 v0.0.0-20210402161424-2e8d93401602
 	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 // indirect

@@ -69,8 +69,8 @@ func (s *Shipper) Post(payload controlplane.AgentPayload) error {
 }
 
 func (r *VersionTrackerReconciler) ShipToControlPlane(ver SubjectVersion) error {
-	log := r.Log
-	log.Info("Sending AppVersion", "identifier", ver.ID)
+	log := r.Log.WithName("shipper").WithValues("VersionTracker", fmt.Sprintf("%s/%s", ver.Namespace, ver.ID))
+	log.Info("Sending version info to the scontrol plane")
 	shipperConf := &ShipperConfig{
 		URL:       r.Config.ControlPlaneUrl,
 		Token:     r.Config.ControlPlaneAuthToken,
@@ -100,7 +100,7 @@ func (r *VersionTrackerReconciler) PrepareThePayload(sv SubjectVersion) controlp
 	}
 	payload.Version = controlplane.SubjectVersion{
 		ID:              sv.ID,
-		NameSpace:       sv.NameSpace,
+		NameSpace:       sv.Namespace,
 		RunningVersions: sv.UniqVersions,
 		ResourceCount:   sv.TotalResourceCount,
 		Versions:        vers,

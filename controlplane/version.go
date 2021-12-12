@@ -1,17 +1,23 @@
 package controlplane
 
 import (
-	"fmt"
-
 	api "github.com/skillz/opvic/controlplane/api/v1alpha1"
 	"github.com/skillz/opvic/controlplane/version"
 	"github.com/skillz/opvic/utils"
 )
 
 func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectVersion) (api.VersionInfos, error) {
+	log := cp.log.WithName("version").WithValues(
+		"agent_id", agentID,
+		"version_id", ver.ID,
+		"provider", ver.RemoteVersion.Provider,
+		"repo", ver.RemoteVersion.Repo,
+	)
+	log.V(1).Info("getting version infos")
 	var latest string
 	Remoteversions, err := cp.provider.GetVersions(ver.RemoteVersion)
 	if err != nil {
+		log.Error(err, "Failed to get remote versions")
 		return api.VersionInfos{}, err
 	}
 	subV, err := version.NewVersions("", Remoteversions)
@@ -19,8 +25,8 @@ func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectV
 		return api.VersionInfos{}, err
 	}
 	if len(Remoteversions) == 0 {
-		fmt.Printf("No remote versions found for %s. check the remoteVersion config\n", ver.ID)
-		latest = ""
+		log.V(1).Info("No remote version found. Is this expected? check the remoteVersion config")
+		latest = "missing"
 	} else {
 		latest = subV.Latest().String()
 	}

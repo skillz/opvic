@@ -2,11 +2,19 @@ package controlplane
 
 import (
 	"github.com/gin-gonic/gin"
+
 	api "github.com/skillz/opvic/controlplane/api/v1alpha1"
 )
 
 func (cp *ControlPlane) SetupRouter() *gin.Engine {
-	r := gin.Default()
+	r := gin.New()
+
+	// Setup Logging
+	if cp.logHttpsRequests {
+		r.Use(cp.LoggerMiddleware())
+	}
+
+	r.Use(cp.RecoveryWithLogger(true))
 
 	// Add metrics middleware
 	r.Use(cp.MetricsMiddleware())
@@ -19,7 +27,6 @@ func (cp *ControlPlane) SetupRouter() *gin.Engine {
 
 	// Metrics router
 	r.GET(api.MetricsPath, PrometheusHandler())
-
 	// Ping router
 	v1alpha1.GET(api.PingAPIPath, func(c *gin.Context) { c.String(200, "pong") })
 
@@ -29,6 +36,9 @@ func (cp *ControlPlane) SetupRouter() *gin.Engine {
 	v1alpha1.GET(api.AgentAPIPath, cp.AgentGet())
 	v1alpha1.GET(api.AgentsSubjectVersionPath, cp.AgentsSubjectVersionGet())
 	v1alpha1.GET(api.AgentsSubjectVersionInfoPath, cp.AgentsSubjectVersionsInfoGet())
+
+	// Overview router
+	v1alpha1.GET(api.OverviewAPIPath, cp.OverviewGet())
 
 	return r
 }

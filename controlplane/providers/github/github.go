@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/bradleyfalzon/ghinstallation"
+	"github.com/go-logr/logr"
 	"github.com/google/go-github/v39/github"
 	"github.com/patrickmn/go-cache"
 	v1alpha1 "github.com/skillz/opvic/agent/api/v1alpha1"
@@ -28,9 +29,10 @@ type Provider struct {
 	client *github.Client
 	ctx    context.Context
 	cache  *cache.Cache
+	log    logr.Logger
 }
 
-func (c *Config) NewProvider(ctx context.Context, cache *cache.Cache) (*Provider, error) {
+func (c *Config) NewProvider(ctx context.Context, cache *cache.Cache, logger logr.Logger) (*Provider, error) {
 	var transport http.RoundTripper
 	var client *github.Client
 	if c.Token != "" {
@@ -64,6 +66,7 @@ func (c *Config) NewProvider(ctx context.Context, cache *cache.Cache) (*Provider
 		client: client,
 		ctx:    ctx,
 		cache:  cache,
+		log:    logger,
 	}, nil
 }
 
@@ -84,8 +87,10 @@ func tagsCacheKey(repo string) string {
 }
 
 func (p *Provider) getReleases(repo string) ([]*github.RepositoryRelease, error) {
+	log := p.log.WithValues("repo", repo)
 	var releases []*github.RepositoryRelease
 	if r, ok := p.getCacheValue(releasesCacheKey(repo)); !ok {
+		log.V(1).Info("getting releases")
 		owner, name, err := splitRepo(repo)
 		if err != nil {
 			return nil, err
@@ -107,14 +112,17 @@ func (p *Provider) getReleases(repo string) ([]*github.RepositoryRelease, error)
 		}
 		p.setCacheValue(releasesCacheKey(repo), releases)
 	} else {
+		log.V(1).Info("found releases in cache")
 		releases = r.([]*github.RepositoryRelease)
 	}
 	return releases, nil
 }
 
 func (p *Provider) getTags(repo string) ([]*github.RepositoryTag, error) {
+	log := p.log.WithValues("repo", repo)
 	var tags []*github.RepositoryTag
 	if t, ok := p.getCacheValue(tagsCacheKey(repo)); !ok {
+		log.V(1).Info("getting tags")
 		owner, name, err := splitRepo(repo)
 		if err != nil {
 			return nil, err
@@ -136,6 +144,7 @@ func (p *Provider) getTags(repo string) ([]*github.RepositoryTag, error) {
 		}
 		p.setCacheValue(tagsCacheKey(repo), tags)
 	} else {
+		log.V(1).Info("found tags in cache")
 		tags = t.([]*github.RepositoryTag)
 	}
 	return tags, nil
@@ -152,7 +161,7 @@ func (p *Provider) getVersionsFromReleases(conf v1alpha1.RemoteVersion) ([]strin
 		if release.GetTagName() == "" {
 			continue
 		}
-		matched, v := utils.MatchPattern(conf.Extraction.Regex.Pattern, conf.Extraction.Regex.Result, release.GetTagName())
+		matched, v := utils.MatchPattern(conf.Extraction.Regex.Pattern, conf.Extraction.Regex.Result, release.GetName())
 		if matched {
 			matchedVersions = append(matchedVersions, v)
 		}
