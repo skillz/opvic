@@ -51,10 +51,10 @@ build: generate fmt vet ## Build control plane and agent binary.
 	go build -o bin/opvic-agent ./cmd/agent
 
 run: manifests generate fmt vet ## Run control plane from your host.
-	go run ./cmd/controlplane/main.go --controlplane.auth-token test
+	go run ./cmd/controlplane/main.go --controlplane.auth-token test --log.level debug --log.http-requests
 
 run-agent: manifests generate fmt vet ## Run an agent from your host.
-	go run ./cmd/agent/main.go --agent.identifier=test-agent --controlplane.url=http://localhost:8080 --controlplane.auth-token=test
+	go run ./cmd/agent/main.go --agent.identifier=test-agent --controlplane.url=http://localhost:8080 --controlplane.auth-token=test --log.level debug
 
 docker-build: test ## Build docker image for control plane and agent.
 	docker build -t ${IMG} .

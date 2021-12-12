@@ -18,6 +18,9 @@ const (
 	AgentAPIPath                 = "/agents/:id"
 	AgentsSubjectVersionPath     = "/agents/:id/:versionId"
 	AgentsSubjectVersionInfoPath = "/agents/:id/:versionId/versions"
+
+	// Control Plane endpoints
+	OverviewAPIPath = "/overview"
 )
 
 var (

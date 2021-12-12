@@ -152,7 +152,7 @@ func (p *Provider) getVersionsFromReleases(conf v1alpha1.RemoteVersion) ([]strin
 		if release.GetTagName() == "" {
 			continue
 		}
-		matched, v := utils.MatchPattern(conf.Extraction.Regex.Pattern, conf.Extraction.Regex.Result, release.GetTagName())
+		matched, v := utils.MatchPattern(conf.Extraction.Regex.Pattern, conf.Extraction.Regex.Result, release.GetName())
 		if matched {
 			matchedVersions = append(matchedVersions, v)
 		}

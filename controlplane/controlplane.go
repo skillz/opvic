@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/go-logr/logr"
 	"github.com/patrickmn/go-cache"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/skillz/opvic/controlplane/providers"
@@ -18,6 +19,8 @@ type Config struct {
 	GithubConfig            *github.Config
 	CacheExpiration         time.Duration
 	CacheReconcilerInterval time.Duration
+	LogHttpRequests         bool
+	Logger                  logr.Logger
 }
 
 type ControlPlane struct {
@@ -27,10 +30,14 @@ type ControlPlane struct {
 	cacheReconcilerInterval time.Duration
 	provider                *providers.Provider
 	mutex                   sync.RWMutex
+	logHttpsRequests        bool
+	logger                  logr.Logger
 	reqCount                *prometheus.CounterVec
 }
 
 func (conf *Config) NewControlPlane() (*ControlPlane, error) {
+	logger := conf.Logger
+	logger.Info("Initializing the control plane")
 	cache := cache.New(conf.CacheExpiration, cache.NoExpiration)
 	ctx := context.Background()
 	if conf.Token == nil {
@@ -38,8 +45,10 @@ func (conf *Config) NewControlPlane() (*ControlPlane, error) {
 	}
 
 	pConf := providers.Config{
+		Logger: logger,
 		Github: conf.GithubConfig,
 	}
+	logger.Info("Initializing the remote providers")
 	provider, err := pConf.Init(ctx, cache)
 	if err != nil {
 		return nil, err
@@ -51,6 +60,8 @@ func (conf *Config) NewControlPlane() (*ControlPlane, error) {
 		cacheReconcilerInterval: conf.CacheReconcilerInterval,
 		provider:                provider,
 		mutex:                   sync.RWMutex{},
+		logHttpsRequests:        conf.LogHttpRequests,
+		logger:                  conf.Logger,
 		reqCount: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: metricNamespace,
 			Subsystem: metricSubsystem,
@@ -61,14 +72,15 @@ func (conf *Config) NewControlPlane() (*ControlPlane, error) {
 }
 
 func (cp *ControlPlane) Start() {
-	// Register counter metrics
+	cp.logger.Info("Starting the control plane")
 	prometheus.MustRegister(cp.reqCount)
-	// Setup Routers
+
+	cp.logger.Info("Starting the cache reconciler")
 	r := cp.SetupRouter()
 
-	// Start background tasks
+	cp.logger.Info("Starting the background cache reconciler")
 	go cp.executeCronJobs()
 
-	// Start HTTP server
+	cp.logger.Info("Starting the HTTP server", "bind_addr", cp.bindAddr)
 	r.Run(cp.bindAddr)
 }

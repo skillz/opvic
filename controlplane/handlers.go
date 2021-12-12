@@ -28,6 +28,11 @@ func (cp *ControlPlane) AgentsPost() gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusAccepted, gin.H{"message": "data received"})
+		cp.logger.Info(
+			"received agent payload",
+			"agent_id", ap.AgentID,
+			"version_id", ap.Version.ID,
+		)
 		go func() {
 			cp.UpdateAgentListCache(ap.AgentID, ap.AgentTags)
 			cp.UpdateAgentSubjectVersionsList(ap.AgentID, ap.Version.ID)
