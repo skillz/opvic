@@ -31,13 +31,13 @@ type ControlPlane struct {
 	provider                *providers.Provider
 	mutex                   sync.RWMutex
 	logHttpsRequests        bool
-	logger                  logr.Logger
+	log                     logr.Logger
 	reqCount                *prometheus.CounterVec
 }
 
 func (conf *Config) NewControlPlane() (*ControlPlane, error) {
-	logger := conf.Logger
-	logger.Info("Initializing the control plane")
+	log := conf.Logger
+	log.Info("Initializing the control plane")
 	cache := cache.New(conf.CacheExpiration, cache.NoExpiration)
 	ctx := context.Background()
 	if conf.Token == nil {
@@ -45,10 +45,10 @@ func (conf *Config) NewControlPlane() (*ControlPlane, error) {
 	}
 
 	pConf := providers.Config{
-		Logger: logger,
+		Logger: log,
 		Github: conf.GithubConfig,
 	}
-	logger.Info("Initializing the remote providers")
+	log.Info("Initializing the remote providers")
 	provider, err := pConf.Init(ctx, cache)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (conf *Config) NewControlPlane() (*ControlPlane, error) {
 		provider:                provider,
 		mutex:                   sync.RWMutex{},
 		logHttpsRequests:        conf.LogHttpRequests,
-		logger:                  conf.Logger,
+		log:                     log,
 		reqCount: prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: metricNamespace,
 			Subsystem: metricSubsystem,
@@ -72,15 +72,15 @@ func (conf *Config) NewControlPlane() (*ControlPlane, error) {
 }
 
 func (cp *ControlPlane) Start() {
-	cp.logger.Info("Starting the control plane")
+	cp.log.Info("Starting the control plane")
 	prometheus.MustRegister(cp.reqCount)
 
-	cp.logger.Info("Starting the cache reconciler")
+	cp.log.V(1).Info("Setting up the routes")
 	r := cp.SetupRouter()
 
-	cp.logger.Info("Starting the background cache reconciler")
+	cp.log.V(1).Info("Starting the background cache reconciler")
 	go cp.executeCronJobs()
 
-	cp.logger.Info("Starting the HTTP server", "bind_addr", cp.bindAddr)
+	cp.log.Info("Starting the HTTP server", "bind_addr", cp.bindAddr)
 	r.Run(cp.bindAddr)
 }

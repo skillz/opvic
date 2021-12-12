@@ -13,6 +13,7 @@ func (cp *ControlPlane) SetupRouter() *gin.Engine {
 	if cp.logHttpsRequests {
 		r.Use(cp.LoggerMiddleware())
 	}
+
 	r.Use(cp.RecoveryWithLogger(true))
 
 	// Add metrics middleware

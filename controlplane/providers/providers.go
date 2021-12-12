@@ -28,7 +28,7 @@ type Config struct {
 }
 
 type Provider struct {
-	logger logr.Logger
+	log    logr.Logger
 	Github *github.Provider
 	Helm   *helm.Provider
 }
@@ -36,13 +36,13 @@ type Provider struct {
 func (c *Config) Init(ctx context.Context, cache *cache.Cache) (*Provider, error) {
 	var err error
 	p := &Provider{}
-	logger := c.Logger.WithName("providers")
-	p.Github, err = c.Github.NewProvider(ctx, cache)
+	logger := c.Logger.WithName("provider")
+	p.Github, err = c.Github.NewProvider(ctx, cache, logger.WithName("github"))
 	if err != nil {
 		return nil, err
 	}
-	p.Helm = helm.NewProvider(cache)
-	p.logger = logger
+	p.Helm = helm.NewProvider(cache, logger.WithName("helm"))
+	p.log = logger
 	return p, nil
 }
 

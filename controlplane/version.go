@@ -7,9 +7,17 @@ import (
 )
 
 func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectVersion) (api.VersionInfos, error) {
+	log := cp.log.WithName("version").WithValues(
+		"agent_id", agentID,
+		"version_id", ver.ID,
+		"provider", ver.RemoteVersion.Provider,
+		"repo", ver.RemoteVersion.Repo,
+	)
+	log.V(1).Info("getting version infos")
 	var latest string
 	Remoteversions, err := cp.provider.GetVersions(ver.RemoteVersion)
 	if err != nil {
+		log.Error(err, "Failed to get remote versions")
 		return api.VersionInfos{}, err
 	}
 	subV, err := version.NewVersions("", Remoteversions)
@@ -17,14 +25,8 @@ func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectV
 		return api.VersionInfos{}, err
 	}
 	if len(Remoteversions) == 0 {
-		cp.logger.V(1).Info(
-			"No remote version found. Is this expected? check the remoteVersion config",
-			"agent_id", agentID,
-			"version_id", ver.ID,
-			"provider", ver.RemoteVersion.Provider,
-			"repo", ver.RemoteVersion.Repo,
-		)
-		latest = ""
+		log.V(1).Info("No remote version found. Is this expected? check the remoteVersion config")
+		latest = "missing"
 	} else {
 		latest = subV.Latest().String()
 	}

@@ -14,7 +14,7 @@ import (
 
 type SubjectVersion struct {
 	ID                 string
-	NameSpace          string
+	Namespace          string
 	TotalResourceCount int
 	UniqVersions       []string
 	Versions           []*Version
@@ -31,17 +31,15 @@ type Version struct {
 // ExtractSubjectVersion looks at the feild of each individuel resource and extracts the version
 // based on the extraction configuration in the VersionTracker
 func (r *VersionTrackerReconciler) ExtractSubjectVersion(v v1alpha1.VersionTracker, resources client.ObjectList) SubjectVersion {
-	log := r.Log
+	log := r.Log.WithName("extractor").WithValues("VersionTracker", fmt.Sprintf("%s/%s", v.ObjectMeta.Namespace, v.ObjectMeta.Name))
 	var version string
 	var versions []string
 	uniqueVersions := []string{}
-	appName := v.GetName()
-	subject := v.ObjectMeta.Name
 	items := GetItems(resources)
 	lv := v.GetLocalVersion()
 	appVersion := &SubjectVersion{
-		ID:            subject,
-		NameSpace:     v.ObjectMeta.Namespace,
+		ID:            v.Spec.Name,
+		Namespace:     v.ObjectMeta.Namespace,
 		RemoteVersion: v.Spec.RemoteVersion,
 	}
 
@@ -87,10 +85,13 @@ func (r *VersionTrackerReconciler) ExtractSubjectVersion(v v1alpha1.VersionTrack
 			}
 		}
 	}
-	log.Info("unique version(s)", "version(s)", strings.Join(uniqueVersions, ", "))
-	for _, v := range appVersion.Versions {
-		log.V(1).Info("version extracted", "version", v.Version, "extracted from", v.ExtractedFrom, "number of resources", v.ResourceCount)
-		resourceCount.WithLabelValues(appName, v.ResourceKind, v.ExtractedFrom, v.Version).Set(float64(v.ResourceCount))
+	if len(appVersion.Versions) == 0 {
+		log.Info("could not extract any versions from the resources")
+	} else {
+		log.Info("unique version(s)", "version(s)", strings.Join(uniqueVersions, ", "))
+		for _, v := range appVersion.Versions {
+			log.V(1).Info("extracted version", "version", v.Version, "resource count", v.ResourceCount)
+		}
 	}
 	return *appVersion
 }

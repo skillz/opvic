@@ -133,12 +133,15 @@ func (cp *ControlPlane) UpdateAgentSubjectVersionsList(agentId, versionId string
 }
 
 func (cp *ControlPlane) CacheReconcile() {
-	cp.logger.V(1).Info("starting cache reconcile")
+	log := cp.log.WithName("cache-reconcile")
+	log.V(1).Info("starting cache reconcile")
+
 	cp.cache.DeleteExpired()
 	cp.AgentListCacheReconcile()
 	cp.AgentCacheReconcile()
 	cp.SubjectVersionInfoCacheReconcile()
-	cp.logger.V(1).Info("finished cache reconcile", "interval", cp.cacheReconcilerInterval.String())
+
+	log.V(1).Info("finished cache reconcile", "interval", cp.cacheReconcilerInterval.String())
 }
 
 func (cp *ControlPlane) AgentListCacheReconcile() {
@@ -175,7 +178,7 @@ func (cp *ControlPlane) SubjectVersionInfoCacheReconcile() {
 			for _, ver := range appvers {
 				verInfos, err := cp.GetSubjectVersionInfos(agent, ver)
 				if err != nil {
-					cp.logger.Error(
+					cp.log.Error(
 						err, "error getting subject version info",
 						"version_id", ver.ID,
 					)

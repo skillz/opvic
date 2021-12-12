@@ -71,7 +71,7 @@ func (cp *ControlPlane) MetricsMiddleware() gin.HandlerFunc {
 func (cp *ControlPlane) RecoveryWithLogger(stack bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
-			logger := cp.logger
+			log := cp.log.WithName("http")
 			if err := recover(); err != nil {
 				// Check for a broken connection, as it is not really a
 				// condition that warrants a panic stack trace.
@@ -86,7 +86,7 @@ func (cp *ControlPlane) RecoveryWithLogger(stack bool) gin.HandlerFunc {
 
 				httpRequest, _ := httputil.DumpRequest(c.Request, false)
 				if brokenPipe {
-					logger.Error(fmt.Errorf("%v", err), "broken pipe", "path", c.Request.URL.Path, "request", string(httpRequest))
+					log.Error(fmt.Errorf("%v", err), "broken pipe", "path", c.Request.URL.Path, "request", string(httpRequest))
 					// If the connection is dead, we can't write a status to it.
 					c.Error(err.(error)) // nolint: errcheck
 					c.Abort()
@@ -94,9 +94,9 @@ func (cp *ControlPlane) RecoveryWithLogger(stack bool) gin.HandlerFunc {
 				}
 
 				if stack {
-					logger.Error(fmt.Errorf("%v", err), "[recovery fro panic]", "path", c.Request.URL.Path, "request", string(httpRequest), "stack", string(debug.Stack()))
+					log.Error(err.(error), "[recovery from panic]", "path", c.Request.URL.Path, "request", string(httpRequest), "stack", string(debug.Stack()))
 				} else {
-					logger.Error(fmt.Errorf("%v", err), "[recovery fro panic]", "path", c.Request.URL.Path, "request", string(httpRequest))
+					log.Error(err.(error), "[recovery from panic]", "path", c.Request.URL.Path, "request", string(httpRequest))
 				}
 				c.AbortWithStatus(http.StatusInternalServerError)
 			}
@@ -107,7 +107,7 @@ func (cp *ControlPlane) RecoveryWithLogger(stack bool) gin.HandlerFunc {
 
 func (cp *ControlPlane) LoggerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		logger := cp.logger
+		log := cp.log.WithName("http")
 		start := time.Now()
 		path := c.Request.URL.Path
 
@@ -117,11 +117,11 @@ func (cp *ControlPlane) LoggerMiddleware() gin.HandlerFunc {
 		if len(c.Errors) > 0 {
 			// Append error field if this is an erroneous request.
 			for _, e := range c.Errors.Errors() {
-				logger.Error(fmt.Errorf("%v", e), "error", "path", path, "request", c.Request.URL.String())
+				log.Error(fmt.Errorf("%v", e), "error", "path", path, "request", c.Request.URL.String())
 			}
 		} else {
 			end := time.Now()
-			logger.Info("request",
+			log.Info("request",
 				"method", c.Request.Method,
 				"path", path,
 				"status", c.Writer.Status(),
