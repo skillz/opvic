@@ -4,7 +4,6 @@ go 1.16
 
 require (
 	github.com/bradleyfalzon/ghinstallation v1.1.1
-	github.com/gin-contrib/zap v0.0.2
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-logr/logr v0.4.0
 	github.com/google/go-github/v39 v39.2.0
