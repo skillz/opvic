@@ -53,7 +53,7 @@ var (
 
 	metricsAddr           = kingpin.Flag("metrics-bind-address", "The address the metric endpoint binds to.").Envar("METRICS_BIND_ADDRESS").Default(":8081").String()
 	probeAddr             = kingpin.Flag("health-probe-bind-address", "The address the probe endpoint binds to.").Envar("HEALTH_PROBE_BIND_ADDRESS").Default(":8082").String()
-	agentID               = kingpin.Flag("agent.identifier", "Agent unique identifier").Envar("AGENT_IDENTIFIER").String()
+	agentID               = kingpin.Flag("agent.identifier", "Agent unique identifier").Envar("AGENT_IDENTIFIER").Required().String()
 	agentInterval         = kingpin.Flag("agent.interval", "Agent reconciliation interval").Envar("AGENT_INTERVAL").Default("60s").Duration()
 	agentTags             = kingpin.Flag("agent.tags", "key:value pair to add to the agent tags. (you can pass this flag multiple times").Envar("AGENT_TAGS").PlaceHolder("KEY:VALUE").StringMap()
 	controlPlaneUrl       = kingpin.Flag("controlplane.url", "Control Plane URL").Envar("CONTROLPLANE_URL").PlaceHolder("http(s)://CONTROLPLANE-ADDRESS").String()
