@@ -169,7 +169,7 @@ func (cp *ControlPlane) AgentCacheReconcile() {
 				versionList = append(versionList, versionID)
 			}
 		}
-		log.Info("updating registered  subject versions in cache", "agent", agent, "subject versions count", len(subjectVersions))
+		log.Info("updating registered subject versions in cache", "agent", agent, "subject versions count", len(subjectVersions))
 		cp.SetAgentCache(agent, subjectVersions)
 		cp.SetAgentSubjectVersionListCache(agent, versionList)
 	}
