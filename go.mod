@@ -15,6 +15,7 @@ require (
 	github.com/onsi/gomega v1.13.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/prometheus/client_golang v1.11.0
+	github.com/prometheus/common v0.26.0
 	github.com/spf13/cobra v1.2.1 // indirect
 	go.uber.org/zap v1.19.1
 	golang.org/x/net v0.0.0-20210913180222-943fd674d43e // indirect

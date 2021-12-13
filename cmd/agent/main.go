@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 
@@ -34,6 +35,7 @@ import (
 
 	"github.com/skillz/opvic/agent"
 	"github.com/skillz/opvic/agent/api/v1alpha1"
+	"github.com/skillz/opvic/utils"
 	"gopkg.in/alecthomas/kingpin.v2"
 	//+kubebuilder:scaffold:imports
 )
@@ -51,7 +53,7 @@ var (
 
 	metricsAddr           = kingpin.Flag("metrics-bind-address", "The address the metric endpoint binds to.").Envar("METRICS_BIND_ADDRESS").Default(":8081").String()
 	probeAddr             = kingpin.Flag("health-probe-bind-address", "The address the probe endpoint binds to.").Envar("HEALTH_PROBE_BIND_ADDRESS").Default(":8082").String()
-	agentID               = kingpin.Flag("agent.identifier", "Agent unique identifier").Envar("AGENT_IDENTIFIER").Required().String()
+	agentID               = kingpin.Flag("agent.identifier", "Agent unique identifier").Envar("AGENT_IDENTIFIER").String()
 	agentInterval         = kingpin.Flag("agent.interval", "Agent reconciliation interval").Envar("AGENT_INTERVAL").Default("60s").Duration()
 	agentTags             = kingpin.Flag("agent.tags", "key:value pair to add to the agent tags. (you can pass this flag multiple times").Envar("AGENT_TAGS").PlaceHolder("KEY:VALUE").StringMap()
 	controlPlaneUrl       = kingpin.Flag("controlplane.url", "Control Plane URL").Envar("CONTROLPLANE_URL").PlaceHolder("http(s)://CONTROLPLANE-ADDRESS").String()
@@ -68,6 +70,7 @@ func init() {
 
 func main() {
 	kingpin.HelpFlag.Short('h')
+	kingpin.Version(fmt.Sprintf("%s\n%s", utils.VersionInfo(), utils.BuildContext()))
 	kingpin.Parse()
 
 	logger := zap.New(func(o *zap.Options) {
@@ -133,7 +136,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	setupLog.Info("starting agent")
+	setupLog.Info("starting agent", "version info", utils.VersionInfo(), "build context", utils.BuildContext())
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running agent")
 		os.Exit(1)
