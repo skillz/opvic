@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 
@@ -34,6 +35,7 @@ import (
 
 	"github.com/skillz/opvic/agent"
 	"github.com/skillz/opvic/agent/api/v1alpha1"
+	"github.com/skillz/opvic/utils"
 	"gopkg.in/alecthomas/kingpin.v2"
 	//+kubebuilder:scaffold:imports
 )
@@ -68,6 +70,7 @@ func init() {
 
 func main() {
 	kingpin.HelpFlag.Short('h')
+	kingpin.Version(fmt.Sprintf("%s\n%s", utils.VersionInfo(), utils.BuildContext()))
 	kingpin.Parse()
 
 	logger := zap.New(func(o *zap.Options) {
@@ -133,7 +136,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	setupLog.Info("starting agent")
+	setupLog.Info("starting agent", "version info", utils.VersionInfo(), "build context", utils.BuildContext())
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running agent")
 		os.Exit(1)

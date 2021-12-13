@@ -74,7 +74,6 @@ func (conf *Config) NewControlPlane() (*ControlPlane, error) {
 }
 
 func (cp *ControlPlane) Start() {
-	cp.log.Info("Starting the control plane")
 	prometheus.MustRegister(cp.reqCount)
 
 	cp.log.V(1).Info("Setting up the routes")

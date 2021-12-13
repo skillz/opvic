@@ -17,12 +17,14 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/skillz/opvic/controlplane"
 	"github.com/skillz/opvic/controlplane/providers/github"
+	"github.com/skillz/opvic/utils"
 	zaplib "go.uber.org/zap"
 	"gopkg.in/alecthomas/kingpin.v2"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -50,6 +52,7 @@ var (
 
 func main() {
 	kingpin.HelpFlag.Short('h')
+	kingpin.Version(fmt.Sprintf("%s\n%s", utils.VersionInfo(), utils.BuildContext()))
 	kingpin.Parse()
 
 	logger := zap.New(func(o *zap.Options) {
@@ -92,5 +95,6 @@ func main() {
 		os.Exit(1)
 	}
 	prometheus.MustRegister(cp)
+	logger.Info("starting the control plane", "version info", utils.VersionInfo(), "build context", utils.BuildContext())
 	cp.Start()
 }
