@@ -17,7 +17,7 @@ func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectV
 	var latest string
 	remoteversions, err := cp.provider.GetVersions(ver.RemoteVersion)
 	if err != nil {
-		log.Error(err, "Failed to get remote versions")
+		log.Error(err, "failed to get remote versions")
 		return api.VersionInfos{}, err
 	}
 	subV, err := version.NewVersions("", remoteversions)
@@ -40,7 +40,10 @@ func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectV
 		RemoteRepo:     ver.RemoteVersion.Repo,
 	}
 	for _, v := range ver.Versions {
-		subV.SetRunningVersion(v.RunningVersion)
+		if err := subV.SetRunningVersion(v.RunningVersion); err != nil {
+			log.Error(err, "failed to set running version")
+			return api.VersionInfos{}, err
+		}
 		verInfos.Versions = append(verInfos.Versions, api.VersionInfo{
 			RunningVersion:    subV.GetRunningVersion().String(),
 			ResourceCount:     v.ResourceCount,

@@ -55,7 +55,7 @@ func (r *VersionTrackerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	// Validate the VersionTracker
 	err := v.Validate()
 	if err != nil {
-		log.Error(err, "Failed to validate VersionTracker")
+		log.Error(err, "failed to validate VersionTracker")
 		return ctrl.Result{}, err
 	}
 

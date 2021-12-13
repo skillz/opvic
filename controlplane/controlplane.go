@@ -38,7 +38,7 @@ type ControlPlane struct {
 
 func (conf *Config) NewControlPlane() (*ControlPlane, error) {
 	log := conf.Logger
-	log.Info("Initializing the control plane")
+	log.Info("initializing the control plane")
 	cache := cache.New(conf.CacheExpiration, cache.NoExpiration)
 	ctx := context.Background()
 	if conf.Token == nil {
@@ -49,7 +49,7 @@ func (conf *Config) NewControlPlane() (*ControlPlane, error) {
 		Logger: log,
 		Github: conf.GithubConfig,
 	}
-	log.Info("Initializing the remote providers")
+	log.Info("initializing the remote providers")
 	provider, err := pConf.Init(ctx, cache)
 	if err != nil {
 		return nil, err
@@ -76,12 +76,12 @@ func (conf *Config) NewControlPlane() (*ControlPlane, error) {
 func (cp *ControlPlane) Start() {
 	prometheus.MustRegister(cp.reqCount)
 
-	cp.log.V(1).Info("Setting up the routes")
+	cp.log.V(1).Info("setting up the routes")
 	r := cp.SetupRouter()
 
-	cp.log.V(1).Info("Starting the background cache reconciler")
+	cp.log.V(1).Info("starting the background cache reconciler")
 	go cp.executeCronJobs()
 
-	cp.log.Info("Starting the HTTP server", "bind_addr", cp.bindAddr)
+	cp.log.Info("starting the HTTP server", "bind_addr", cp.bindAddr)
 	r.Run(cp.bindAddr)
 }
