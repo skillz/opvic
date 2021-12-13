@@ -134,28 +134,31 @@ func (cp *ControlPlane) UpdateAgentSubjectVersionsList(agentId, versionId string
 
 func (cp *ControlPlane) CacheReconcile() {
 	log := cp.log.WithName("cache-reconcile")
-	log.V(1).Info("starting cache reconcile")
+	log.Info("starting cache reconcile")
 
 	cp.cache.DeleteExpired()
 	cp.AgentListCacheReconcile()
 	cp.AgentCacheReconcile()
 	cp.SubjectVersionInfoCacheReconcile()
 
-	log.V(1).Info("finished cache reconcile", "interval", cp.cacheReconcilerInterval.String())
+	log.Info("finished cache reconcile", "interval", cp.cacheReconcilerInterval.String())
 }
 
 func (cp *ControlPlane) AgentListCacheReconcile() {
+	log := cp.log.WithName("cache")
 	agents := cp.GetAgentListCache()
 	newAgents := api.Agents{}
 	for _, agent := range agents {
-		if time.Now().Unix()-agent.LastHeartbeat < 3600 {
+		if time.Now().Unix()-agent.LastHeartbeat < int64(cp.cacheExpiration.Seconds()) {
 			newAgents = append(newAgents, agent)
 		}
 	}
+	log.Info("updating registered agents in cache", "count", len(newAgents), "agents", newAgents.ListIDs())
 	cp.SetAgentListCache(newAgents)
 }
 
 func (cp *ControlPlane) AgentCacheReconcile() {
+	log := cp.log.WithName("cache")
 	agents := cp.GetAgentListCache()
 	for _, agent := range agents.ListIDs() {
 		subjectVersions := []*api.SubjectVersion{}
@@ -166,6 +169,7 @@ func (cp *ControlPlane) AgentCacheReconcile() {
 				versionList = append(versionList, versionID)
 			}
 		}
+		log.Info("updating registered  subject versions in cache", "agent", agent, "subject versions count", len(subjectVersions))
 		cp.SetAgentCache(agent, subjectVersions)
 		cp.SetAgentSubjectVersionListCache(agent, versionList)
 	}

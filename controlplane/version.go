@@ -15,17 +15,17 @@ func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectV
 	)
 	log.V(1).Info("getting version infos")
 	var latest string
-	Remoteversions, err := cp.provider.GetVersions(ver.RemoteVersion)
+	remoteversions, err := cp.provider.GetVersions(ver.RemoteVersion)
 	if err != nil {
 		log.Error(err, "Failed to get remote versions")
 		return api.VersionInfos{}, err
 	}
-	subV, err := version.NewVersions("", Remoteversions)
+	subV, err := version.NewVersions("", remoteversions)
 	if err != nil {
 		return api.VersionInfos{}, err
 	}
-	if len(Remoteversions) == 0 {
-		log.V(1).Info("No remote version found. Is this expected? check the remoteVersion config")
+	if len(remoteversions) == 0 {
+		log.V(1).Info("no remote version found. Is this expected? check the remoteVersion config")
 		latest = "missing"
 	} else {
 		latest = subV.Latest().String()

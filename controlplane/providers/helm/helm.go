@@ -16,8 +16,10 @@ import (
 const indexPath string = "index.yaml"
 
 type ChartVersion struct {
-	Version string `yaml:"version"`
+	Version    string `yaml:"version"`
+	AppVersion string `yaml:"appVersion"`
 }
+
 type Index struct {
 	APIVersion string `yaml:"apiVersion"`
 	Entries    map[string][]*ChartVersion
@@ -58,10 +60,10 @@ func (p *Provider) GetIndex(repo string) (*Index, error) {
 	log := p.log.WithValues("repo", repo)
 	indexCache, ok := p.GetCacheValue(ReleasesCacheKey(repo))
 	if ok {
-		log.Info("found index in cache")
+		log.V(1).Info("found index in cache")
 		return indexCache.(*Index), nil
 	}
-	log.Info("getting index from remote")
+	log.V(1).Info("getting index from remote")
 	url := AppendIndex(repo)
 	resp, err := p.client.Get(url)
 	if err != nil {
@@ -103,7 +105,13 @@ func (p *Provider) GetVersions(conf v1alpha1.RemoteVersion) ([]string, error) {
 		return versions, nil
 	}
 	for _, chartVersion := range chartVersions {
-		matched, v := utils.MatchPattern(conf.Extraction.Regex.Pattern, conf.Extraction.Regex.Result, chartVersion.Version)
+		version := ""
+		if conf.Strategy == v1alpha1.HelmStrategyChartVersion {
+			version = chartVersion.Version
+		} else if conf.Strategy == v1alpha1.HelmStrategyAppVersion {
+			version = chartVersion.AppVersion
+		}
+		matched, v := utils.MatchPattern(conf.Extraction.Regex.Pattern, conf.Extraction.Regex.Result, version)
 		if matched {
 			matchedVersions = append(matchedVersions, v)
 		}

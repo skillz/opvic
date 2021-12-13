@@ -27,6 +27,7 @@ type ControlPlane struct {
 	bindAddr                string
 	token                   *string
 	cache                   *cache.Cache
+	cacheExpiration         time.Duration
 	cacheReconcilerInterval time.Duration
 	provider                *providers.Provider
 	mutex                   sync.RWMutex
@@ -57,6 +58,7 @@ func (conf *Config) NewControlPlane() (*ControlPlane, error) {
 		bindAddr:                conf.BindAddr,
 		token:                   conf.Token,
 		cache:                   cache,
+		cacheExpiration:         conf.CacheExpiration,
 		cacheReconcilerInterval: conf.CacheReconcilerInterval,
 		provider:                provider,
 		mutex:                   sync.RWMutex{},

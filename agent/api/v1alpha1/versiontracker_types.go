@@ -27,10 +27,16 @@ import (
 )
 
 type LocalStrategy string
+type RemoteStrategy string
 
 const (
 	FieldSelection LocalStrategy = "FieldSelection"
 	ImageTag       LocalStrategy = "ImageTag"
+
+	HelmStrategyChartVersion RemoteStrategy = "chartVersion"
+	HelmStrategyAppVersion   RemoteStrategy = "appVersion"
+	GithubStrategyReleases   RemoteStrategy = "releases"
+	GithubStrategyTags       RemoteStrategy = "tags"
 )
 
 var (
@@ -103,10 +109,9 @@ type RemoteVersion struct {
 	// +kubebuilder:validation:Required
 	Provider string `json:"provider"`
 
-	// +kubebuilder:validation:Enum = ["releases", "tags"]
-	// +kubebuilder:default=releases
-	// +optional
-	Strategy string `json:"strategy"`
+	// +kubebuilder:validation:Enum = ["releases", "tags", "chartVersion", "appVersion"]
+	// +kubebuilder:validation:Required
+	Strategy RemoteStrategy `json:"strategy"`
 
 	// Repository to get the remote version from.
 	// e.g owner/repo or https://charts.bitnami.com/bitnami
