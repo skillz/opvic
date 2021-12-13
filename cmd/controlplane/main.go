@@ -39,7 +39,7 @@ var (
 	controlPlaneBindAddr         = kingpin.Flag("controlplane.bind-address", "The address the metric endpoint binds to.").Envar("CONTROLPLANE_BIND_ADDRESS").Default(":8080").String()
 	controlPlaneAuthToken        = kingpin.Flag("controlplane.auth-token", "Control Plane Shared Auth Token").Envar("CONTROLPLANE_AUTH_TOKEN").Required().String()
 	providerGithubToken          = kingpin.Flag("provider.github.token", "Github PAT for the github provider").Envar("PROVIDER_GITHUB_TOKEN").String()
-	providerGithubAppID          = kingpin.Flag("provider.github.app-id", "Github App ID for the github provider").Envar("PROVIDER_GITHUB_GITHUB_APP_ID").Int64()
+	providerGithubAppID          = kingpin.Flag("provider.github.app-id", "Github App ID for the github provider").Envar("PROVIDER_GITHUB_APP_ID").Int64()
 	providerGithubInstallationID = kingpin.Flag("provider.github.app-installation-id", "Github App ID for the github provider").Envar("PROVIDER_GITHUB_APP_INSTALLATION_ID").Int64()
 	providerGithubAppPrivateKey  = kingpin.Flag("provider.github.app-private-key", "Github APP Private Key for github provider").Envar("PROVIDER_GITHUB_APP_PRIVATE_KEY").Default("").String()
 	cacheExpiration              = kingpin.Flag("cache.expiration", "Cache expiration duration").Envar("CACHE_EXPIRATION").Default("1h").Duration()

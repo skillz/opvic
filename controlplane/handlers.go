@@ -28,7 +28,7 @@ func (cp *ControlPlane) AgentsPost() gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusAccepted, gin.H{"message": "data received"})
-		cp.log.Info(
+		cp.log.V(1).Info(
 			"received agent payload",
 			"agent_id", ap.AgentID,
 			"version_id", ap.Version.ID,

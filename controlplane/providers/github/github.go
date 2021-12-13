@@ -11,9 +11,20 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/google/go-github/v39/github"
 	"github.com/patrickmn/go-cache"
+	"github.com/prometheus/client_golang/prometheus"
 	v1alpha1 "github.com/skillz/opvic/agent/api/v1alpha1"
 	"github.com/skillz/opvic/utils"
 	"golang.org/x/oauth2"
+)
+
+var (
+	rateLimitRemaining = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: "opvic_provider_github",
+			Name:      "rate_limit_remaining",
+			Help:      "The number of requests remaining in the current rate limit window.",
+		},
+	)
 )
 
 // Config contains configuration for Github provider
@@ -32,6 +43,10 @@ type Provider struct {
 	log    logr.Logger
 }
 
+func init() {
+	prometheus.MustRegister(rateLimitRemaining)
+}
+
 func (c *Config) NewProvider(ctx context.Context, cache *cache.Cache, logger logr.Logger) (*Provider, error) {
 	var transport http.RoundTripper
 	var client *github.Client
@@ -44,12 +59,12 @@ func (c *Config) NewProvider(ctx context.Context, cache *cache.Cache, logger log
 		if _, err := os.Stat(c.AppPrivateKey); err == nil {
 			tr, err = ghinstallation.NewKeyFromFile(http.DefaultTransport, c.AppID, c.AppInstallationID, c.AppPrivateKey)
 			if err != nil {
-				return nil, fmt.Errorf("authentication failed: using private key at %s: %v", c.AppPrivateKey, err)
+				return nil, fmt.Errorf("authentication failed: using private key from file %s: %v", c.AppPrivateKey, err)
 			}
 		} else if c.AppPrivateKey != "" {
 			tr, err = ghinstallation.New(http.DefaultTransport, c.AppID, c.AppInstallationID, []byte(c.AppPrivateKey))
 			if err != nil {
-				return nil, fmt.Errorf("authentication failed: using private key of size %d (%s...): %v", len(c.AppPrivateKey), strings.Split(c.AppPrivateKey, "\n")[0], err)
+				return nil, fmt.Errorf("authentication failed: using private key: %v", err)
 			}
 		}
 
@@ -59,8 +74,17 @@ func (c *Config) NewProvider(ctx context.Context, cache *cache.Cache, logger log
 		httpClient := &http.Client{Transport: transport}
 		client = github.NewClient(httpClient)
 	} else {
+		logger.V(1).Info("no authentication provided. You might encounter Github API rate limiting issues.")
 		client = github.NewClient(nil)
 	}
+
+	// Check the rate limit and set it as metrics on startup
+	limit, _, err := client.RateLimits(ctx)
+	if err != nil {
+		return nil, err
+	}
+	logger.V(1).Info("rate limit", "remaining", limit.Core.Remaining)
+	rateLimitRemaining.Set(float64(limit.Core.Remaining))
 
 	return &Provider{
 		client: client,
@@ -215,9 +239,17 @@ func (p *Provider) getVersionsFromTags(conf v1alpha1.RemoteVersion) ([]string, e
 }
 
 func (p *Provider) GetVersions(conf v1alpha1.RemoteVersion) ([]string, error) {
-	if conf.Strategy == "releases" {
+	// Check the rate limit and set it as metrics
+	limit, _, err := p.client.RateLimits(p.ctx)
+	if err != nil {
+		return nil, err
+	}
+	p.log.V(1).Info("rate limit", "remaining", limit.Core.Remaining)
+	rateLimitRemaining.Set(float64(limit.Core.Remaining))
+
+	if conf.Strategy == v1alpha1.GithubStrategyReleases {
 		return p.getVersionsFromReleases(conf)
-	} else if conf.Strategy == "tags" {
+	} else if conf.Strategy == v1alpha1.GithubStrategyTags {
 		return p.getVersionsFromTags(conf)
 	}
 	return nil, fmt.Errorf("strategy %s is not supported", conf.Strategy)

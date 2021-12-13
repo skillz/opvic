@@ -101,11 +101,11 @@ spec:
                       or https://charts.bitnami.com/bitnami
                     type: string
                   strategy:
-                    default: releases
                     type: string
                 required:
                 - provider
                 - repo
+                - strategy
                 type: object
               resources:
                 properties:

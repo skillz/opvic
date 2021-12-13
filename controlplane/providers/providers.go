@@ -47,6 +47,10 @@ func (c *Config) Init(ctx context.Context, cache *cache.Cache) (*Provider, error
 }
 
 func (p *Provider) GetVersions(conf v1alpha1.RemoteVersion) ([]string, error) {
+	if conf.Provider == "" || conf.Repo == "" {
+		p.log.V(1).Info("no remoteVersion configuration provided, skipping remote version lookup")
+		return []string{}, nil
+	}
 	switch conf.Provider {
 	case Github.String():
 		return p.Github.GetVersions(conf)
