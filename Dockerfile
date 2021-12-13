@@ -25,8 +25,8 @@ COPY agent/api agent/api
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o opvic -ldflags " \
     -X github.com/skillz/opvic/utils.Version=${VERSION} \
-    -X github.com/skillz/opvic/utils.Revision=${SOURCE_COMMIT} \
-    -X github.com/skillz/opvic/utils.Branch=${SOURCE_BRANCH} \
+    -X github.com/skillz/opvic/utils.Revision=${REVISION} \
+    -X github.com/skillz/opvic/utils.Branch=${BRANCH} \
     -X github.com/skillz/opvic/utils.BuildUser=${BUILD_USER} \
     -X github.com/skillz/opvic/utils.BuildDate=${BUILD_DATE}"
 
