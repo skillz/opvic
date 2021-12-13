@@ -10,6 +10,7 @@ on:
       - "go.sum"
       - 'Dockerfile'
       - 'Dockerfile.agent'
+      - '.github/workflows/wip.yaml'
   pull_request:
     branches:
       - main
@@ -19,6 +20,7 @@ on:
       - "go.sum"
       - 'Dockerfile'
       - 'Dockerfile.agent'
+      - '.github/workflows/wip.yaml'
 
 jobs:
   control-plane:
@@ -48,9 +50,8 @@ jobs:
           images: "ghcr.io/${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}"
           tags: |
             type=raw,value=canary
+            type=raw,value={{sha}}
             type=ref,event=branch
-            type=sha
-            type=sha,format=long
 
       - id: date
         run: echo "::set-output name=value::$(date +%FT%TZ)"
@@ -84,6 +85,7 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Login to GitHub Container Registry
+        if: ${{ github.event_name != 'pull_request' }}
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
@@ -97,9 +99,8 @@ jobs:
           images: "ghcr.io/${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}-agent"
           tags: |
             type=raw,value=canary
+            type=raw,value={{sha}}
             type=ref,event=branch
-            type=sha
-            type=sha,format=long
 
       - id: date
         run: echo "::set-output name=value::$(date +%FT%TZ)"
