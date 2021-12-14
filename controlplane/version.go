@@ -6,6 +6,10 @@ import (
 	"github.com/skillz/opvic/utils"
 )
 
+const (
+	MissingLatest = "missing"
+)
+
 func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectVersion) (api.VersionInfos, error) {
 	log := cp.log.WithName("version").WithValues(
 		"agent_id", agentID,
@@ -26,7 +30,7 @@ func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectV
 	}
 	if len(remoteversions) == 0 {
 		log.V(1).Info("no remote version found. Is this expected? check the remoteVersion config")
-		latest = "missing"
+		latest = MissingLatest
 	} else {
 		latest = subV.Latest().String()
 	}
@@ -50,10 +54,10 @@ func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectV
 			ResourceKind:      v.ResourceKind,
 			ExtractedFrom:     v.ExtractedFrom,
 			LatestVersion:     latest,
-			AvailableVersions: subV.GreaterThan().StringList(),
-			AvailableMajors:   subV.MajorGreaterThan().StringList(),
-			AvailableMinors:   subV.MinorGreaterThan().StringList(),
-			AvailablePatches:  subV.PatchGreaterThan().StringList(),
+			AvailableVersions: (subV.GreaterThan().StringList()),
+			AvailableMajors:   subV.LastMajorsGreaterThan().StringList(),
+			AvailableMinors:   subV.MinorsGreaterThan().StringList(),
+			AvailablePatches:  subV.PatchesGreaterThan().StringList(),
 			MajorAvailable:    subV.MajorAvailable(),
 			MinorAvailable:    subV.MinorAvailable(),
 			PatchAvailable:    subV.PatchAvailable(),

@@ -69,6 +69,9 @@ func (cp *ControlPlane) setVersionMetrics(ch chan<- prometheus.Metric) {
 						v.LatestVersion,
 					)
 
+					if v.LatestVersion == MissingLatest {
+						continue
+					}
 					// Metrics for available major,minor and patch versions
 					ch <- prometheus.MustNewConstMetric(
 						availableMajorVersionMetric,
