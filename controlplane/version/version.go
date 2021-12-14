@@ -102,11 +102,14 @@ func (v *Versions) GreaterThan() *Versions {
 	}
 }
 
-func (v *Versions) MajorGreaterThan() *Versions {
+// Only returns last available majors greater than running version
+func (v *Versions) LastMajorsGreaterThan() *Versions {
 	var vers []*version.Version
-	for _, version := range v.RemoteVersions {
-		if version.Segments()[0] > v.RunningVersion.Segments()[0] {
+	newVer := v
+	for _, version := range newVer.RemoteVersions {
+		if version.Segments()[0] > newVer.RunningVersion.Segments()[0] {
 			vers = append(vers, version)
+			newVer.RunningVersion = version
 		}
 	}
 	return &Versions{
@@ -115,7 +118,7 @@ func (v *Versions) MajorGreaterThan() *Versions {
 	}
 }
 
-func (v *Versions) MinorGreaterThan() *Versions {
+func (v *Versions) MinorsGreaterThan() *Versions {
 	var vers []*version.Version
 	for _, version := range v.RemoteVersions {
 		if version.Segments()[0] == v.RunningVersion.Segments()[0] && version.Segments()[1] > v.RunningVersion.Segments()[1] {
@@ -128,7 +131,7 @@ func (v *Versions) MinorGreaterThan() *Versions {
 	}
 }
 
-func (v *Versions) PatchGreaterThan() *Versions {
+func (v *Versions) PatchesGreaterThan() *Versions {
 	var vers []*version.Version
 	for _, version := range v.RemoteVersions {
 		if version.Segments()[0] == v.RunningVersion.Segments()[0] && version.Segments()[1] == v.RunningVersion.Segments()[1] && version.Segments()[2] > v.RunningVersion.Segments()[2] {
@@ -142,13 +145,13 @@ func (v *Versions) PatchGreaterThan() *Versions {
 }
 
 func (v *Versions) MajorAvailable() bool {
-	return len(v.MajorGreaterThan().StringList()) > 0
+	return len(v.LastMajorsGreaterThan().StringList()) > 0
 }
 
 func (v *Versions) MinorAvailable() bool {
-	return len(v.MinorGreaterThan().StringList()) > 0
+	return len(v.MinorsGreaterThan().StringList()) > 0
 }
 
 func (v *Versions) PatchAvailable() bool {
-	return len(v.PatchGreaterThan().StringList()) > 0
+	return len(v.PatchesGreaterThan().StringList()) > 0
 }
