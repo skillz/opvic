@@ -102,7 +102,7 @@ func (v *Versions) GreaterThan() *Versions {
 	}
 }
 
-// Only returns last majors available greater than running version
+// Only returns last available majors greater than running version
 func (v *Versions) LastMajorsGreaterThan() *Versions {
 	var vers []*version.Version
 	newVer := v
