@@ -51,7 +51,7 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Shared Auth secret name
 */}}
 {{- define "opvic.sharedAuthSecretName" -}}
-{{- if and .Values.controlplane.enabled .Values.agent.enabled }}
+{{- if or .Values.controlplane.enabled .Values.agent.enabled }}
 {{- if .Values.sharedAuthentication.token }}
 {{- printf "%s-shared-auth-token" (include "opvic.fullname" .) }}
 {{- else if .Values.sharedAuthentication.existingSecret }}
