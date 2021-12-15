@@ -43,6 +43,15 @@ func Contains(l []string, s string) bool {
 	return false
 }
 
+func ContainsInt(l []int, i int) bool {
+	for _, a := range l {
+		if a == i {
+			return true
+		}
+	}
+	return false
+}
+
 func RemoveDuplicateStr(strSlice []string) []string {
 	allKeys := make(map[string]bool)
 	list := []string{}

@@ -2,11 +2,34 @@ package version
 
 import (
 	"github.com/hashicorp/go-version"
+	"github.com/skillz/opvic/utils"
 )
+
+type RemoteVersions []*version.Version
 
 type Versions struct {
 	RunningVersion *version.Version
-	RemoteVersions []*version.Version
+	RemoteVersions RemoteVersions
+}
+
+func (r *RemoteVersions) Latest() *version.Version {
+	var latest *version.Version
+	for _, version := range *r {
+		if latest == nil || version.GreaterThan(latest) {
+			latest = version
+		}
+	}
+	return latest
+}
+
+func (r *RemoteVersions) Earliest() *version.Version {
+	var earliest *version.Version
+	for _, version := range *r {
+		if earliest == nil || version.LessThan(earliest) {
+			earliest = version
+		}
+	}
+	return earliest
 }
 
 func NewVersions(running string, remotes []string) (*Versions, error) {
@@ -62,23 +85,11 @@ func (v *Versions) SetRemoteVersions(remotes []string) error {
 }
 
 func (v *Versions) Earliest() *version.Version {
-	var earliest *version.Version
-	for _, v := range v.RemoteVersions {
-		if earliest == nil || v.LessThan(earliest) {
-			earliest = v
-		}
-	}
-	return earliest
+	return v.RemoteVersions.Earliest()
 }
 
 func (v *Versions) Latest() *version.Version {
-	var latest *version.Version
-	for _, version := range v.RemoteVersions {
-		if latest == nil || version.GreaterThan(latest) {
-			latest = version
-		}
-	}
-	return latest
+	return v.RemoteVersions.Latest()
 }
 
 func (v *Versions) StringList() []string {
@@ -105,16 +116,27 @@ func (v *Versions) GreaterThan() *Versions {
 // Only returns last available majors greater than running version
 func (v *Versions) LastMajorsGreaterThan() *Versions {
 	var vers []*version.Version
-	newVer := *v
-	for _, version := range newVer.RemoteVersions {
-		if version.Segments()[0] > newVer.RunningVersion.Segments()[0] {
+	var uniqueMajors []int
+	for _, version := range v.RemoteVersions {
+		if version.Segments()[0] > v.RunningVersion.Segments()[0] {
 			vers = append(vers, version)
-			newVer.RunningVersion = version
+			if !utils.ContainsInt(uniqueMajors, version.Segments()[0]) {
+				uniqueMajors = append(uniqueMajors, version.Segments()[0])
+			}
 		}
+	}
+
+	uniqueMajorVersions := make(map[int]RemoteVersions, len(uniqueMajors))
+	for _, version := range vers {
+		uniqueMajorVersions[version.Segments()[0]] = append(uniqueMajorVersions[version.Segments()[0]], version)
+	}
+	var uniqueMajorLatests []*version.Version
+	for _, versions := range uniqueMajorVersions {
+		uniqueMajorLatests = append(uniqueMajorLatests, versions.Latest())
 	}
 	return &Versions{
 		RunningVersion: v.RunningVersion,
-		RemoteVersions: vers,
+		RemoteVersions: uniqueMajorLatests,
 	}
 }
 
