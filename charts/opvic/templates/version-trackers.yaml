@@ -1,23 +1,23 @@
 {{- $labels := include "opvic.labels" . -}}
-{{- range $name, $conf := .Values.versionTrackers }}
+{{- range $vt := .Values.versionTrackers }}
 ---
 apiVersion: opvic.skillz.com/v1alpha1
 kind: VersionTracker
 metadata:
-  name: {{ $name }}
+  name: {{ $vt.name }}
   labels:
     {{- $labels | nindent 4 }}
 spec:
-  name: {{ $name }}
-  {{- with $conf.resources }}
+  name: {{ $vt.name }}
+  {{- with $vt.resources }}
   resources:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with $conf.localVersion }}
+  {{- with $vt.localVersion }}
   localVersion:
     {{- toYaml . | nindent 4 }}
   {{- end }}
-  {{- with $conf.remoteVersion }}
+  {{- with $vt.remoteVersion }}
   remoteVersion:
     {{- toYaml . | nindent 4 }}
   {{- end }}

@@ -10,7 +10,7 @@ on:
       - "go.sum"
       - 'Dockerfile'
       - 'Dockerfile.agent'
-      - '.github/workflows/wip.yaml'
+      - '.github/workflows/publish-canary-images.yaml'
   pull_request:
     branches:
       - main
@@ -20,7 +20,7 @@ on:
       - "go.sum"
       - 'Dockerfile'
       - 'Dockerfile.agent'
-      - '.github/workflows/wip.yaml'
+      - '.github/workflows/publish-canary-images.yaml'
 
 jobs:
   control-plane:

@@ -25,7 +25,11 @@ keywords:
 - observability
 - version-tracking
 
-home: https://github.com/actions-runner-controller/actions-runner-controller
+home: https://github.com/skillz/opvic
 
 sources:
-  - https://github.com/actions-runner-controller/actions-runner-controller
+  - https://github.com/skillz/opvic
+
+maintainers:
+  - name: skillz
+    url: https://www.skillz.com/

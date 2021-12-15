@@ -1,0 +1,81 @@
+
+# This file sets some opinionated values for kube-score to use
+# when parsing the chart
+sharedAuthentication:
+  token: "test-token"
+
+controlplane:
+  enabled: true
+  image:
+    pullPolicy: Always
+
+  podSecurityContext:
+    fsGroup: 2000
+
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 20000
+    runAsGroup: 20000
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+agent:
+  enabled: true
+  image:
+    pullPolicy: Always
+
+  identifier: "test-agent"
+
+  tags: |
+    key1=value1
+    key2=value2
+
+  podSecurityContext:
+    fsGroup: 2000
+
+  securityContext:
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 20000
+    runAsGroup: 20000
+
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+versionTrackers:
+- name: aws-vpc-cni
+  resources:
+    namespaces:
+      - kube-system
+    selector:
+      matchLabels:
+      app.kubernetes.io/name: aws-node
+  localVersion:
+    strategy: ImageTag
+  remoteVersion:
+    provider: github
+    strategy: releases
+    repo: aws/amazon-vpc-cni-k8s
+    extraction:
+      regex:
+        pattern: ^v([0-9]+\.[0-9]+\.[0-9]+)$
+        result: $1
+
