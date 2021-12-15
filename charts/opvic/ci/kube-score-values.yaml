@@ -61,21 +61,21 @@ agent:
       memory: 128Mi
 
 versionTrackers:
-  aws-vpc-cni:
-    resources:
-      namespaces:
-        - kube-system
-      selector:
-        matchLabels:
-        app.kubernetes.io/name: aws-node
-    localVersion:
-      strategy: ImageTag
-    remoteVersion:
-      provider: github
-      strategy: releases
-      repo: aws/amazon-vpc-cni-k8s
-      extraction:
-        regex:
-          pattern: ^v([0-9]+\.[0-9]+\.[0-9]+)$
-          result: $1
+- name: aws-vpc-cni
+  resources:
+    namespaces:
+      - kube-system
+    selector:
+      matchLabels:
+      app.kubernetes.io/name: aws-node
+  localVersion:
+    strategy: ImageTag
+  remoteVersion:
+    provider: github
+    strategy: releases
+    repo: aws/amazon-vpc-cni-k8s
+    extraction:
+      regex:
+        pattern: ^v([0-9]+\.[0-9]+\.[0-9]+)$
+        result: $1
 
