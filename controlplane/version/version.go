@@ -105,7 +105,7 @@ func (v *Versions) GreaterThan() *Versions {
 // Only returns last available majors greater than running version
 func (v *Versions) LastMajorsGreaterThan() *Versions {
 	var vers []*version.Version
-	newVer := v
+	newVer := *v
 	for _, version := range newVer.RemoteVersions {
 		if version.Segments()[0] > newVer.RunningVersion.Segments()[0] {
 			vers = append(vers, version)
