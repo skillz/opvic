@@ -1,6 +1,6 @@
 for chart in `ls charts`;
 do
-helm template --values charts/$chart/ci/ci-values.yaml charts/$chart | kube-score score - \
+helm template --values charts/$chart/ci/kube-score-values.yaml charts/$chart | kube-score score - \
     --ignore-test pod-networkpolicy \
     --ignore-test deployment-has-poddisruptionbudget \
     --ignore-test deployment-has-host-podantiaffinity \
