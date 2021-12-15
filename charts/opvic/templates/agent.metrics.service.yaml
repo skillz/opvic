@@ -1,0 +1,17 @@
+{{- if .Values.agent.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "opvic.fullname" . }}-agent-metrics
+  labels:
+    {{- include "opvic.agent.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.agent.service.type }}
+  ports:
+    - port: {{ .Values.agent.service.port }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    {{- include "opvic.agent.selectorLabels" . | nindent 4 }}
+{{- end }}
