@@ -54,7 +54,7 @@ func (cp *ControlPlane) GetSubjectVersionInfos(agentID string, ver *api.SubjectV
 			ResourceKind:      v.ResourceKind,
 			ExtractedFrom:     v.ExtractedFrom,
 			LatestVersion:     latest,
-			AvailableVersions: (subV.GreaterThan().StringList()),
+			AvailableVersions: subV.GreaterThan().StringList(),
 			AvailableMajors:   subV.LastMajorsGreaterThan().StringList(),
 			AvailableMinors:   subV.MinorsGreaterThan().StringList(),
 			AvailablePatches:  subV.PatchesGreaterThan().StringList(),
