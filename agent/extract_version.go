@@ -30,13 +30,18 @@ type Version struct {
 
 // ExtractSubjectVersion looks at the feild of each individuel resource and extracts the version
 // based on the extraction configuration in the VersionTracker
-func (r *VersionTrackerReconciler) ExtractSubjectVersion(v v1alpha1.VersionTracker, resources client.ObjectList) SubjectVersion {
+func (r *VersionTrackerReconciler) ExtractSubjectVersion(v v1alpha1.VersionTracker, items []interface{}) SubjectVersion {
 	log := r.Log.WithName("extractor").WithValues("VersionTracker", fmt.Sprintf("%s/%s", v.ObjectMeta.Namespace, v.ObjectMeta.Name))
 	var version string
 	var versions []string
 	uniqueVersions := []string{}
-	items := GetItems(resources)
 	lv := v.GetLocalVersion()
+
+	if len(items) == 0 {
+		log.Info("no resource was found. skipping version extraction")
+		return SubjectVersion{}
+	}
+
 	appVersion := &SubjectVersion{
 		ID:            v.Spec.Name,
 		Namespace:     v.ObjectMeta.Namespace,
