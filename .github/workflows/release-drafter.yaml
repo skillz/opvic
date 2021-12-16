@@ -4,15 +4,13 @@ on:
   push:
     branches:
       - main
-    paths:
-      - '!charts/**'
-      - '!.github/**'
+    paths-ignore:
+      - 'charts/**'
+      - '.github/**'
   pull_request:
     types: [opened, reopened, synchronize]
     branches:
       - main
-  pull_request_target:
-      types: [opened, reopened, synchronize]
 
 jobs:
   update_release_draft:

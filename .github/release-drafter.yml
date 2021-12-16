@@ -1,4 +1,4 @@
-name-template: 'v$RESOLVED_VERSION'
+name-template: 'v$RESOLVED_VERSION Opvic control plane and agent'
 tag-template: 'v$RESOLVED_VERSION'
 categories:
   - title: '🚀 Features'
