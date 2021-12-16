@@ -33,7 +33,7 @@ jobs:
         uses: haya14busa/action-cond@v1
         with:
           cond: ${{ github.event_name == 'release' }}
-          if_true: ${{ github.release.tag_name }}
+          if_true: ${{ github.event.release.tag_name }}
           if_false: "canary"
 
       - name: Checkout
