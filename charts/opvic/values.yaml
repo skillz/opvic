@@ -21,7 +21,8 @@ controlplane:
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     # set to canary for the latest unreleased version
-    tag: "canary"
+    # tag: "canary"
+    tag: ""
 
   # Control plane cache configuration
   cache:
@@ -131,7 +132,8 @@ agent:
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     # set to canary for the latest unreleased version
-    tag: "canary"
+    # tag: "canary"
+    tag: ""
 
   # Agent unique id across all clusters
   identifier: ""
