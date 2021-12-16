@@ -1,4 +1,4 @@
-name: Publish Canary Images
+name: Publish Images
 
 on:
   push:
@@ -21,11 +21,21 @@ on:
       - 'Dockerfile'
       - 'Dockerfile.agent'
       - '.github/workflows/publish-canary-images.yaml'
+  release:
+    types: [published]
 
 jobs:
   control-plane:
     runs-on: ubuntu-latest
     steps:
+      - name: Get Version
+        id: version
+        uses: haya14busa/action-cond@v1
+        with:
+          cond: ${{ github.event_name == 'release' }}
+          if_true: ${{ github.release.tag_name }}
+          if_false: "canary"
+
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -49,7 +59,7 @@ jobs:
         with:
           images: "ghcr.io/${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}"
           tags: |
-            type=raw,value=canary
+            type=raw,value=${{ steps.version.outputs.value }}
             type=raw,value={{sha}}
             type=ref,event=branch
 
@@ -66,7 +76,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            VERSION=canary
+            VERSION=${{ steps.version.outputs.value }}
             REVISION=${{ github.sha }}
             BRANCH=${{ github.ref }}
             BUILD_DATE=${{ steps.date.outputs.value }}
@@ -75,6 +85,14 @@ jobs:
   agent:
     runs-on: ubuntu-latest
     steps:
+      - name: Get Version
+        id: version
+        uses: haya14busa/action-cond@v1
+        with:
+          cond: ${{ github.event_name == 'release' }}
+          if_true: ${{ github.release.tag_name }}
+          if_false: "canary"
+
       - name: Checkout
         uses: actions/checkout@v2
 
@@ -98,7 +116,7 @@ jobs:
         with:
           images: "ghcr.io/${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}-agent"
           tags: |
-            type=raw,value=canary
+            type=raw,value=${{ steps.version.outputs.value }}
             type=raw,value={{sha}}
             type=ref,event=branch
 
@@ -116,7 +134,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            VERSION=canary
+            VERSION=${{ steps.version.outputs.value }}
             REVISION=${{ github.sha }}
             BRANCH=${{ github.ref }}
             BUILD_DATE=${{ steps.date.outputs.value }}
