@@ -48,6 +48,7 @@ func (r *VersionTrackerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	var v v1alpha1.VersionTracker
 	if err := r.Get(ctx, req.NamespacedName, &v); err != nil {
 		log.Error(err, "unable to fetch VersionTracker")
+		reconciliationErrorsTotal.Inc()
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 	// Set defaults
@@ -56,6 +57,7 @@ func (r *VersionTrackerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	err := v.Validate()
 	if err != nil {
 		log.Error(err, "failed to validate VersionTracker")
+		reconciliationErrorsTotal.Inc()
 		return ctrl.Result{}, err
 	}
 
@@ -69,6 +71,7 @@ func (r *VersionTrackerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	selector, err := metav1.LabelSelectorAsSelector(v.Spec.Resources.Selector)
 	if err != nil {
 		log.Error(err, "failed to convert label selector to selector")
+		reconciliationErrorsTotal.Inc()
 		return ctrl.Result{}, err
 	}
 	opts = append(opts, client.MatchingLabelsSelector{Selector: selector})
@@ -77,6 +80,7 @@ func (r *VersionTrackerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	resources, err := v.GetObjectList()
 	if err != nil {
 		log.Error(err, "failed to get resource ObjectList")
+		reconciliationErrorsTotal.Inc()
 		return ctrl.Result{}, err
 	}
 
@@ -88,25 +92,29 @@ func (r *VersionTrackerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		return ctrl.Result{}, err
 	}
 
-	// Extract versions from resources
-	sv := r.ExtractSubjectVersion(v, resources)
+	// Get items based on the resource type
+	items := GetItems(resources)
+	if len(items) == 0 {
+		log.Info("no resources found")
+	} else {
+		// Extract versions from resources
+		sv := r.ExtractSubjectVersion(v, items)
 
-	//
+		// Ship the version information to the Control Plane
+		if len(sv.Versions) > 0 && r.Config.ControlPlaneUrl != "" {
+			err := r.ShipToControlPlane(sv)
+			if err != nil {
+				log.Error(err, "failed to ship the version to control plane")
+				reconciliationErrorsTotal.Inc()
+				return ctrl.Result{}, err
+			}
+		}
+	}
+
 	elapsed := time.Since(start)
 	lastReconciliationTimestamp.SetToCurrentTime()
 	reconciliationDuration.Set(float64(elapsed.Milliseconds()))
-
-	// Ship the version information to the Control Plane
-	if len(sv.Versions) > 0 && r.Config.ControlPlaneUrl != "" {
-		err := r.ShipToControlPlane(sv)
-		if err != nil {
-			log.Error(err, "failed to ship the version to control plane")
-			reconciliationErrorsTotal.Inc()
-			return ctrl.Result{}, err
-		}
-	}
 	log.Info("done reconciling", "interval", r.Config.Interval)
-
 	return ctrl.Result{
 		RequeueAfter: r.Config.Interval,
 	}, nil

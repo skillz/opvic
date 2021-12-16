@@ -11,13 +11,16 @@ import (
 func getFeilds(jsonPath string, resource interface{}) ([]string, error) {
 	fields, err := get.RelaxedJSONPathExpression(jsonPath)
 	if err != nil {
-
+		return nil, err
 	}
 	j := jsonpath.New("jsonpath")
 	if err := j.Parse(fields); err != nil {
-		panic(err)
+		return nil, err
 	}
 	values, err := j.FindResults(resource)
+	if err != nil {
+		return nil, err
+	}
 	valueStrings := []string{}
 	for arrIx := range values {
 		for valIx := range values[arrIx] {

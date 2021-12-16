@@ -74,14 +74,15 @@ func (r *VersionTrackerReconciler) ShipToControlPlane(ver SubjectVersion) error 
 	shipperConf := &ShipperConfig{
 		URL:       r.Config.ControlPlaneUrl,
 		Token:     r.Config.ControlPlaneAuthToken,
-		Timeout:   time.Second * 30,
-		TLSVerify: false,
+		Timeout:   time.Second * 10,
+		TLSVerify: true,
 	}
 	shipper := NewShipper(shipperConf)
 	err := shipper.Post(r.PrepareThePayload(ver))
 	if err != nil {
 		return err
 	}
+	log.Info("successfully sent version info to the control plane")
 	return nil
 }
 

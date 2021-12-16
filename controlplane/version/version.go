@@ -95,9 +95,9 @@ func (v *Versions) Latest() *version.Version {
 func (v *Versions) StringList() []string {
 	vers := []string{}
 	for _, version := range v.RemoteVersions {
-		vers = append(vers, version.String())
+		vers = append(vers, version.Original())
 	}
-	return vers
+	return utils.RemoveDuplicateStr(vers)
 }
 
 func (v *Versions) GreaterThan() *Versions {
