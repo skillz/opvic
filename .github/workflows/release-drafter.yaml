@@ -7,8 +7,10 @@ on:
     paths-ignore:
       - 'charts/**'
       - '.github/**'
-  pull_request_target:
-      types: [opened, reopened, synchronize]
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches:
+      - main
 
 jobs:
   update_release_draft:
