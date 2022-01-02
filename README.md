@@ -5,18 +5,19 @@ A tool to track and compare the versions of resources running in Kubernetes clus
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**
 
-- [Motivation](#motivation)
-- [Architecture Design](#architecture-design)
-  - [Agent](#agent)
-    - [App Discovery](#app-discovery)
-  - [Control Plane](#control-plane)
-- [Installation](#installation)
-- [Examples](#examples)
-  - [Example 1 : Tracking CoreDNS From Container Image Tag](#example-1--tracking-coredns-from-container-image-tag)
-  - [Example 2: Extract the Version From Any Field](#example-2-extract-the-version-from-any-field)
-  - [Example 3: Use appVersion of a Helm Repository](#example-3-use-appversion-of-a-helm-repository)
-  - [Example 4: Track your Helm Chart Versions](#example-4-track-your-helm-chart-versions)
-- [Development](#development)
+- [Opvic](#opvic)
+  - [Motivation](#motivation)
+  - [Architecture Design](#architecture-design)
+    - [Agent](#agent)
+      - [App Discovery](#app-discovery)
+    - [Control Plane](#control-plane)
+  - [Installation](#installation)
+  - [Examples](#examples)
+    - [Example 1 : Tracking CoreDNS From Container Image Tag](#example-1--tracking-coredns-from-container-image-tag)
+    - [Example 2: Extract the Version From Any Field](#example-2-extract-the-version-from-any-field)
+    - [Example 3: Use appVersion of a Helm Repository](#example-3-use-appversion-of-a-helm-repository)
+    - [Example 4: Track your Helm Chart Versions](#example-4-track-your-helm-chart-versions)
+  - [Development](#development)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -403,7 +404,7 @@ Usage:
   help             Display this help.
 
 Development
-  manifests        Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
+  manifests        Generate CustomResourceDefinition object and copy to the charts/opvic directory
   generate         Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
   fmt              Run go fmt against code.
   vet              Run go vet against code.
@@ -418,8 +419,6 @@ Build
 Deployment
   install          Install CRDs into the K8s cluster specified in ~/.kube/config.
   uninstall        Uninstall CRDs from the K8s cluster specified in ~/.kube/config.
-  deploy           Deploy controller to the K8s cluster specified in ~/.kube/config.
-  undeploy         Undeploy controller from the K8s cluster specified in ~/.kube/config.
   controller-gen   Download controller-gen locally if necessary.
   kustomize        Download kustomize locally if necessary.
 ```
