@@ -107,7 +107,7 @@ localVersion: # How agent should extract the version
 remoteVersion: # How control plane should find the remote versions
   provider: github # name of the provider (github, helm)
   strategy: releases # method to use to get the remote versions (releases, tags)
-  repo: org/repoName # name of the repository (owner/repoName)
+  repo: owner/repoName # name of the repository (owner/repoName)
   extraction:
    regex:
      pattern: '^myApp-v([0-9]+\.[0-9]+\.[0-9]+)$'
