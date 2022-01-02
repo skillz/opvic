@@ -1,6 +1,25 @@
 # Opvic
 A tool to track and compare the versions of resources running in Kubernetes clusters and their latest available versions from remote sources (e.g. Github releases, Helm repositories, etc.)
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Motivation](#motivation)
+- [Architecture Design](#architecture-design)
+  - [Agent](#agent)
+    - [App Discovery](#app-discovery)
+  - [Control Plane](#control-plane)
+- [Installation](#installation)
+- [Examples](#examples)
+  - [Example 1 : Tracking CoreDNS From Container Image Tag](#example-1--tracking-coredns-from-container-image-tag)
+  - [Example 2: Extract the Version From Any Field](#example-2-extract-the-version-from-any-field)
+  - [Example 3: Use appVersion of a Helm Repository](#example-3-use-appversion-of-a-helm-repository)
+  - [Example 4: Track your Helm Chart Versions](#example-4-track-your-helm-chart-versions)
+- [Development](#development)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Motivation
 
 Kubernetes is complicated. It becomes more so when there are hundreds, if not thousands, of addons and applications deployed on it. The problem is, how can we stay on top of new releases for all the addons that are deployed on Kubernetes? It’s not an out-of-box feature and we didn’t find any existing solutions for this purpose. GitHub lets us subscribe to repositories, thenemails us when there are new releases. But there are some flaws with this strategy:
