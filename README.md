@@ -48,7 +48,7 @@ There is a Helm chart available for Opvic [here](https://github.com/skillz/opvic
 helm repo add opvic https://skillz.github.io/opvic
 ```
 
-Then deploy it with minimal required configuration. Check out values.yaml for all the available options:
+Then deploy it with minimal required configuration. Check out [values.yaml](https://github.com/skillz/opvic/blob/main/charts/opvic/values.yaml) for all the available options:
 
 ```shell
 helm upgrade --install --namespace opvic --create-namespace opvic opvic/opvic \
