@@ -81,11 +81,13 @@ Ensure that pods are running and that you connect to the control plane:
 
 ```
 kubectl get pods -n opvic
+
 NAME                                   READY   STATUS    RESTARTS   AGE
 opvic-agent-9b64fb88c-qfvnv            1/1     Running   0          34m
 opvic-control-plane-56d6955f7d-wgttd   1/1     Running   0          34m
 
 kubectl port-forward deployment/opvic-control-plane 8080:8080 -n opvic
+
 Forwarding from 127.0.0.1:8080 -> 8080
 Forwarding from [::1]:8080 -> 8080
 
@@ -94,8 +96,8 @@ pong
 ```
 
 Notes:
-- You only need to run control plane in one of your clusters
-- You need to deploy agent and CRD in all clusters
+- You only need to run the control plane in one of your clusters
+- You need to deploy the agent and CRDs in all clusters
 - You don’t need an ingress if the control plane and agent run on the same cluster.
 - VersionTracker resources should be deployed in all clusters
 
@@ -107,32 +109,32 @@ Below is an example of a VersionTracker resource:
 apiVersion: vt.skillz.com/v1alpha1
 kind: VersionTracker
 metadata:
-name: myApp # name of the subject
+  name: myApp # name of the subject
 spec:
-name: myApp # Unique identifier of the app to track
-resources: # How agent should find the resources to extract the version
-  strategy: Pods # Resource Kind. Pods, Nodes, Deployments, etc (default to Pods)
-  namespaces: # (optional) namespaces of the app (default to query all namespaces)
-    - kube-system
-  selector: # Kubernetes standard selector configuration
-    matchLabels:
-      app.kubernetes.io/name: myApp
-localVersion: # How agent should extract the version
- strategy: FieldSelection # strategy to use for the app (ImageTag, FieldSelection)
- fieldSelector: '.metadata.labels.myApp\.io/version' # Valid JsonPath to extract the version from the resource
- extraction: # Regex to extract the version from the resource
-   regex:
-     pattern: '^v([0-9]+\.[0-9]+\.[0-9]+)$'
-     result: '$1'
-remoteVersion: # How control plane should find the remote versions
-  provider: github # name of the provider (github, helm)
-  strategy: releases # method to use to get the remote versions (releases, tags)
-  repo: owner/repoName # name of the repository (owner/repoName)
-  extraction:
-   regex:
-     pattern: '^myApp-v([0-9]+\.[0-9]+\.[0-9]+)$'
-     result: '$1'
-  constraint: '~>3' # Semver constraint to use to filter the remote versions
+  name: myApp # Unique identifier of the app to track
+  resources: # How agent should find the resources to extract the version
+    strategy: Pods # Resource Kind. Pods, Nodes, Deployments, etc (default to Pods)
+    namespaces: # (optional) namespaces of the app (default to query all namespaces)
+      - kube-system
+    selector: # Kubernetes standard selector configuration
+      matchLabels:
+        app.kubernetes.io/name: myApp
+  localVersion: # How agent should extract the version
+   strategy: FieldSelection # strategy to use for the app (ImageTag, FieldSelection)
+   fieldSelector: '.metadata.labels.myApp\.io/version' # Valid JsonPath to extract the version from the resource
+   extraction: # Regex to extract the version from the resource
+     regex:
+       pattern: '^v([0-9]+\.[0-9]+\.[0-9]+)$'
+       result: '$1'
+  remoteVersion: # How control plane should find the remote versions
+    provider: github # name of the provider (github, helm)
+    strategy: releases # method to use to get the remote versions (releases, tags)
+    repo: owner/repoName # name of the repository (owner/repoName)
+    extraction:
+     regex:
+       pattern: '^myApp-v([0-9]+\.[0-9]+\.[0-9]+)$'
+       result: '$1'
+    constraint: '~>3' # Semver constraint to use to filter the remote versions
 ```
 
 Note that if the remote versions are not exposed or the provider is not supported by Opvic yet, you can still track the running versions and not specify the remoteVersion configuration.
@@ -145,25 +147,25 @@ Let’s say you want to track the running version of CoreDNS on your cluster as 
 apiVersion: opvic.skillz.com/v1alpha1
 kind: VersionTracker
 metadata:
-name: coredns
+  name: coredns
 spec:
- name: coredns
- resources:
-   namespaces:
-     - kube-system
-   selector:
-     matchLabels:
-       k8s-app: kube-dns
- localVersion:
-  strategy: ImageTag
- remoteVersion:
-  provider: github
-  strategy: releases
-  repo: coredns/coredns
-  extraction:
-    regex:
-      pattern: ^v([0-9]+\.[0-9]+\.[0-9]+)$
-      result: $1
+  name: coredns
+  resources:
+    namespaces:
+      - kube-system
+    selector:
+      matchLabels:
+        k8s-app: kube-dns
+  localVersion:
+   strategy: ImageTag
+  remoteVersion:
+   provider: github
+   strategy: releases
+   repo: coredns/coredns
+   extraction:
+     regex:
+       pattern: ^v([0-9]+\.[0-9]+\.[0-9]+)$
+       result: $1
 ```
 
 Let's apply this:
@@ -307,30 +309,30 @@ you can extract the local version from any field. So let’s grab Kubelet versio
 ```yaml
 kind: VersionTracker
 metadata:
-name: kubernetes
+  name: kubernetes
 spec:
- name: kubernetes
- resources:
-   strategy: Nodes
-   selector:
-     matchExpressions:
-     - key: kubernetes.io/hostname
-       operator: Exists
- localVersion:
-   strategy: FieldSelector
-   fieldSelector: '.status.nodeInfo.kubeletVersion'
-   extraction:
-     regex:
-       pattern: '^v([0-9]+\.[0-9]+\.[0-9]+)'
-       result: $1
- remoteVersion:
-   provider: github
-   strategy: tags
-   repo: kubernetes/kubernetes
-   extraction:
-     regex:
-       pattern: ^v([0-9]+\.[0-9]+\.[0-9]+)
-       result: $1
+  name: kubernetes
+  resources:
+    strategy: Nodes
+    selector:
+      matchExpressions:
+      - key: kubernetes.io/hostname
+        operator: Exists
+  localVersion:
+    strategy: FieldSelector
+    fieldSelector: '.status.nodeInfo.kubeletVersion'
+    extraction:
+      regex:
+        pattern: '^v([0-9]+\.[0-9]+\.[0-9]+)'
+        result: $1
+  remoteVersion:
+    provider: github
+    strategy: tags
+    repo: kubernetes/kubernetes
+    extraction:
+      regex:
+        pattern: ^v([0-9]+\.[0-9]+\.[0-9]+)
+        result: $1
 ```
 
 In this example we use **FieldSelector** strategy in the **localVersion** configuration and set the JsonPath to `.status.nodeInfo.kubeletVersion` to extract the Kubelet version from the node status. We also use **tags** strategy in the **remoteVersion** configuration to get the latest version from the remote repository.
@@ -343,22 +345,22 @@ If the application that you are tracking does not have a GitHub repository, chec
 apiVersion: opvic.skillz.com/v1alpha1
 kind: VersionTracker
 metadata:
-name: artifactory
+  name: artifactory
 spec:
- name: artifactory
- resources:
-   namespaces:
-     - artifactory
-   selector:
-     matchLabels:
-       component: artifactory
- localVersion:
-   strategy: ImageTag
- remoteVersion:
-   provider: helm
-   strategy: appVersion
-   repo: https://charts.jfrog.io
-   chart: artifactory
+  name: artifactory
+  resources:
+    namespaces:
+      - artifactory
+    selector:
+      matchLabels:
+        component: artifactory
+  localVersion:
+    strategy: ImageTag
+  remoteVersion:
+    provider: helm
+    strategy: appVersion
+    repo: https://charts.jfrog.io
+    chart: artifactory
 ```
 
 ### Example 4: Track your Helm Chart Versions
@@ -369,27 +371,27 @@ You can also track Helm chart versions using the **helm** provider and **chartVe
 apiVersion: opvic.skillz.com/v1alpha1
 kind: VersionTracker
 metadata:
-name: artifactory-helm
+  name: artifactory-helm
 spec:
- name: artifactory-helm-chart
- resources:
-   namespaces:
-     - artifactory
-   selector:
-     matchLabels:
-       component: artifactory
- localVersion:
-   strategy: FieldSelector
-   fieldSelector: '.metadata.labels.chart'
-   extraction:
-     regex:
-       pattern: ^artifactory-([0-9]+\.[0-9]+\.[0-9]+)$
-       result: $1
- remoteVersion:
-   provider: helm
-   strategy: chartVersion
-   repo: https://charts.jfrog.io
-   chart: artifactory
+  name: artifactory-helm-chart
+  resources:
+    namespaces:
+      - artifactory
+    selector:
+      matchLabels:
+        component: artifactory
+  localVersion:
+    strategy: FieldSelector
+    fieldSelector: '.metadata.labels.chart'
+    extraction:
+      regex:
+        pattern: ^artifactory-([0-9]+\.[0-9]+\.[0-9]+)$
+        result: $1
+  remoteVersion:
+    provider: helm
+    strategy: chartVersion
+    repo: https://charts.jfrog.io
+    chart: artifactory
 ```
 
 ## Development
