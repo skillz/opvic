@@ -106,7 +106,7 @@ Notes:
 Below is an example of a VersionTracker resource:
 
 ```yaml
-apiVersion: vt.skillz.com/v1alpha1
+apiVersion: opvic.skillz.com/v1alpha1
 kind: VersionTracker
 metadata:
   name: myApp # name of the subject

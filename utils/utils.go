@@ -7,19 +7,25 @@ import (
 	"github.com/hashicorp/go-version"
 )
 
-func GetResultsFromRegex(pattern, tmpl, content string) string {
+func GetResultsFromRegex(pattern, tmpl, content string) (string, error) {
 	if pattern == "" || tmpl == "" {
-		return content
+		return content, nil
 	}
-	regex := regexp.MustCompile(pattern)
+	regex, err := regexp.Compile(pattern)
+	if err != nil {
+		return "", err
+	}
 	matches := regex.FindStringSubmatchIndex(content)
 	result := regex.ExpandString([]byte{}, tmpl, content, matches)
-	return string(result)
+	return string(result), nil
 }
 
-func MatchPattern(pattern, tmpl, version string) (bool, string) {
-	result := GetResultsFromRegex(pattern, tmpl, version)
-	return result != "", result
+func MatchPattern(pattern, tmpl, version string) (bool, string, error) {
+	result, err := GetResultsFromRegex(pattern, tmpl, version)
+	if err != nil {
+		return false, "", err
+	}
+	return result != "", result, nil
 }
 
 func MeetConstraint(constraint, ver string) (bool, error) {

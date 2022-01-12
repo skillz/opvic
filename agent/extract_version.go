@@ -62,8 +62,8 @@ func (r *VersionTrackerReconciler) ExtractSubjectVersion(v v1alpha1.VersionTrack
 			continue
 		}
 		fieldValue := valueStrings[0]
-		version = GetResultsFromRegex(lv.Extraction.Regex.Pattern, lv.Extraction.Regex.Result, fieldValue)
-		if version == "" {
+		version, err = utils.GetResultsFromRegex(lv.Extraction.Regex.Pattern, lv.Extraction.Regex.Result, fieldValue)
+		if err != nil || version == "" {
 			log.Error(fmt.Errorf("failed to extract version from: %s", fieldValue), "extraction failed", "regex", lv.Extraction.Regex.Pattern, "result template", lv.Extraction.Regex.Result)
 			reconciliationErrorsTotal.Inc()
 			continue

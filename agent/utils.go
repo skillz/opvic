@@ -2,7 +2,6 @@ package agent
 
 import (
 	"fmt"
-	"regexp"
 
 	"k8s.io/client-go/util/jsonpath"
 	"k8s.io/kubectl/pkg/cmd/get"
@@ -28,11 +27,4 @@ func getFeilds(jsonPath string, resource interface{}) ([]string, error) {
 		}
 	}
 	return valueStrings, nil
-}
-
-func GetResultsFromRegex(pattern, tmpl, content string) string {
-	regex := regexp.MustCompile(pattern)
-	matches := regex.FindStringSubmatchIndex(content)
-	result := regex.ExpandString([]byte{}, tmpl, content, matches)
-	return string(result)
 }

@@ -185,7 +185,10 @@ func (p *Provider) getVersionsFromReleases(conf v1alpha1.RemoteVersion) ([]strin
 		if release.GetTagName() == "" {
 			continue
 		}
-		matched, v := utils.MatchPattern(conf.Extraction.Regex.Pattern, conf.Extraction.Regex.Result, release.GetName())
+		matched, v, err := utils.MatchPattern(conf.Extraction.Regex.Pattern, conf.Extraction.Regex.Result, release.GetName())
+		if err != nil {
+			return nil, err
+		}
 		if matched {
 			matchedVersions = append(matchedVersions, v)
 		}
@@ -217,7 +220,10 @@ func (p *Provider) getVersionsFromTags(conf v1alpha1.RemoteVersion) ([]string, e
 		if tag.GetName() == "" {
 			continue
 		}
-		matched, v := utils.MatchPattern(conf.Extraction.Regex.Pattern, conf.Extraction.Regex.Result, tag.GetName())
+		matched, v, err := utils.MatchPattern(conf.Extraction.Regex.Pattern, conf.Extraction.Regex.Result, tag.GetName())
+		if err != nil {
+			return nil, err
+		}
 		if matched {
 			matchedVersions = append(matchedVersions, v)
 		}
