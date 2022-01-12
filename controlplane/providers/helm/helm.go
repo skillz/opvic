@@ -111,7 +111,10 @@ func (p *Provider) GetVersions(conf v1alpha1.RemoteVersion) ([]string, error) {
 		} else if conf.Strategy == v1alpha1.HelmStrategyAppVersion {
 			version = chartVersion.AppVersion
 		}
-		matched, v := utils.MatchPattern(conf.Extraction.Regex.Pattern, conf.Extraction.Regex.Result, version)
+		matched, v, err := utils.MatchPattern(conf.Extraction.Regex.Pattern, conf.Extraction.Regex.Result, version)
+		if err != nil {
+			return nil, err
+		}
 		if matched {
 			matchedVersions = append(matchedVersions, v)
 		}
