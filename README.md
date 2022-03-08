@@ -181,7 +181,7 @@ For remote versions, you can use the **github** provider and look at releases by
 Now you can query the control plane for running versions:
 
 ```shell
-curl -H "Authorization: Bearer test" localhost:8080/api/v1alpha1/agents/test/coredns | jq
+curl -H "Authorization: Bearer test" localhost:8080/api/v1alpha1/agents/test-agent/coredns | jq
 ```
 
 And you would get a response like this:
@@ -219,7 +219,7 @@ And you would get a response like this:
 Normally it takes up to a minute for the control plane to aggregate collected data and retrieve remote versions since that process runs on an interval in the background. To query the versions:
 
 ```shell
-curl -H "Authorization: Bearer test" localhost:8080/api/v1alpha1/agents/test/coredns/versions | jq
+curl -H "Authorization: Bearer test" localhost:8080/api/v1alpha1/agents/test-agent/coredns/versions | jq
 ```
 
 And you would get a response like this:
