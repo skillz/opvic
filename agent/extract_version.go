@@ -17,15 +17,8 @@ type SubjectVersion struct {
 	Namespace          string
 	TotalResourceCount int
 	UniqVersions       []string
-	Versions           []*Version
+	Versions           []*v1alpha1.Version
 	RemoteVersion      v1alpha1.RemoteVersion
-}
-
-type Version struct {
-	ResourceCount int
-	ResourceKind  string
-	ExtractedFrom string
-	Version       string
 }
 
 // ExtractSubjectVersion looks at the feild of each individuel resource and extracts the version
@@ -77,7 +70,7 @@ func (r *VersionTrackerReconciler) ExtractSubjectVersion(v v1alpha1.VersionTrack
 		// add the version to the list of unique versions if it's not already there
 		if !utils.Contains(uniqueVersions, version) {
 			uniqueVersions = append(uniqueVersions, version)
-			appVersion.Versions = append(appVersion.Versions, &Version{
+			appVersion.Versions = append(appVersion.Versions, &v1alpha1.Version{
 				Version:       version,
 				ExtractedFrom: fieldValue,
 				ResourceKind:  v.GetResourceKind(),

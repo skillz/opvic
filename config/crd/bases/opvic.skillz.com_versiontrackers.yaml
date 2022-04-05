@@ -174,6 +174,102 @@ spec:
             type: object
           status:
             description: VersionTrackerStatus defines the observed state of VersionTracker
+            properties:
+              id:
+                type: string
+              localVersion:
+                properties:
+                  extraction:
+                    properties:
+                      regex:
+                        description: Regex to extract the version from the field
+                        properties:
+                          pattern:
+                            description: Regex pattern to extract the version from
+                              the field
+                            type: string
+                          result:
+                            default: $1
+                            type: string
+                        required:
+                        - pattern
+                        - result
+                        type: object
+                    type: object
+                  fieldSelector:
+                    description: Jsonpath to extract the version from the resource
+                    type: string
+                  strategy:
+                    default: ImageTag
+                    type: string
+                required:
+                - strategy
+                type: object
+              namespace:
+                type: string
+              remoteVersion:
+                properties:
+                  chart:
+                    description: Helm chart name to track. Required if `provider`
+                      is `helm-repo`
+                    type: string
+                  constraint:
+                    type: string
+                  extraction:
+                    properties:
+                      regex:
+                        description: Regex to extract the version from the field
+                        properties:
+                          pattern:
+                            description: Regex pattern to extract the version from
+                              the field
+                            type: string
+                          result:
+                            default: $1
+                            type: string
+                        required:
+                        - pattern
+                        - result
+                        type: object
+                    type: object
+                  provider:
+                    default: github
+                    type: string
+                  repo:
+                    description: Repository to get the remote version from. e.g owner/repo
+                      or https://charts.bitnami.com/bitnami
+                    type: string
+                  strategy:
+                    type: string
+                required:
+                - provider
+                - repo
+                - strategy
+                type: object
+              totalResourceCount:
+                type: integer
+              uniqVersions:
+                items:
+                  type: string
+                type: array
+              versions:
+                items:
+                  properties:
+                    extractedFrom:
+                      type: string
+                    resourceCount:
+                      type: integer
+                    resourceKind:
+                      type: string
+                    version:
+                      type: string
+                  required:
+                  - extractedFrom
+                  - resourceCount
+                  - resourceKind
+                  - version
+                  type: object
+                type: array
             type: object
         type: object
     served: true
