@@ -151,7 +151,7 @@ func (p *Provider) getTags(repo string) ([]*github.RepositoryTag, error) {
 		if err != nil {
 			return nil, err
 		}
-		// get releases by pagination (max 100)
+		// get tags by pagination (max 100)
 		opt := &github.ListOptions{
 			PerPage: 100,
 		}

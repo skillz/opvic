@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"reflect"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -46,6 +47,9 @@ func (r *VersionTrackerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 
 	log.Info("starting reconciliation", "interval", r.Config.Interval)
 	var v v1alpha1.VersionTracker
+	var status v1alpha1.VersionTrackerStatus
+	var sv SubjectVersion
+
 	if err := r.Get(ctx, req.NamespacedName, &v); err != nil {
 		log.Error(err, "unable to fetch VersionTracker")
 		reconciliationErrorsTotal.Inc()
@@ -92,22 +96,48 @@ func (r *VersionTrackerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		return ctrl.Result{}, err
 	}
 
+	status.ID = &v.Spec.Name
+	status.Namespace = &v.ObjectMeta.Namespace
+	status.LocalVersion = &v.Spec.LocalVersion
+	status.RemoteVersion = &v.Spec.RemoteVersion
+
 	// Get items based on the resource type
 	items := GetItems(resources)
 	if len(items) == 0 {
 		log.Info("no resources found")
+		count := 0
+		status.TotalResourceCount = &count
 	} else {
 		// Extract versions from resources
-		sv := r.ExtractSubjectVersion(v, items)
+		sv = r.ExtractSubjectVersion(v, items)
+		var uniqVersions []*string
+		for _, v := range sv.UniqVersions {
+			uniqVersions = append(uniqVersions, &v)
+		}
+		status.TotalResourceCount = &sv.TotalResourceCount
+		status.UniqVersions = uniqVersions
+		status.Versions = sv.Versions
+	}
 
-		// Ship the version information to the Control Plane
-		if len(sv.Versions) > 0 && r.Config.ControlPlaneUrl != "" {
-			err := r.ShipToControlPlane(sv)
-			if err != nil {
-				log.Error(err, "failed to ship the version to control plane")
-				reconciliationErrorsTotal.Inc()
-				return ctrl.Result{}, err
-			}
+	// Update the VersionTracker status
+	if !reflect.DeepEqual(v.Status, status) {
+		updated := v.DeepCopy()
+		updated.Status = status
+		if err := r.Status().Patch(ctx, updated, client.MergeFrom(&v)); err != nil {
+			log.Info("Failed to patch VersionTracker", "error", err)
+			return ctrl.Result{
+				Requeue: true,
+			}, nil
+		}
+	}
+
+	// Ship the version information to the Control Plane
+	if len(sv.Versions) > 0 && r.Config.ControlPlaneUrl != "" {
+		err := r.ShipToControlPlane(sv)
+		if err != nil {
+			log.Error(err, "failed to ship the version to control plane")
+			reconciliationErrorsTotal.Inc()
+			return ctrl.Result{}, err
 		}
 	}
 
@@ -115,6 +145,7 @@ func (r *VersionTrackerReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	lastReconciliationTimestamp.SetToCurrentTime()
 	reconciliationDuration.Set(float64(elapsed.Milliseconds()))
 	log.Info("done reconciling", "interval", r.Config.Interval)
+
 	return ctrl.Result{
 		RequeueAfter: r.Config.Interval,
 	}, nil

@@ -89,3 +89,75 @@ GOBIN=$(PROJECT_DIR)/bin go get $(2) ;\
 rm -rf $$TMP_DIR ;\
 }
 endef
+
+# find or download etcd
+etcd:
+ifeq (, $(shell which etcd))
+ifeq (, $(wildcard $(TEST_ASSETS)/etcd))
+	@{ \
+	set -xe ;\
+	INSTALL_TMP_DIR=$$(mktemp -d) ;\
+	cd $$INSTALL_TMP_DIR ;\
+	wget https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.2/kubebuilder_2.3.2_$(OS_NAME)_amd64.tar.gz ;\
+	mkdir -p $(TEST_ASSETS) ;\
+	tar zxvf kubebuilder_2.3.2_$(OS_NAME)_amd64.tar.gz ;\
+	mv kubebuilder_2.3.2_$(OS_NAME)_amd64/bin/etcd $(TEST_ASSETS)/etcd ;\
+	mv kubebuilder_2.3.2_$(OS_NAME)_amd64/bin/kube-apiserver $(TEST_ASSETS)/kube-apiserver ;\
+	mv kubebuilder_2.3.2_$(OS_NAME)_amd64/bin/kubectl $(TEST_ASSETS)/kubectl ;\
+	rm -rf $$INSTALL_TMP_DIR ;\
+	}
+ETCD_BIN=$(TEST_ASSETS)/etcd
+else
+ETCD_BIN=$(TEST_ASSETS)/etcd
+endif
+else
+ETCD_BIN=$(shell which etcd)
+endif
+
+# find or download kube-apiserver
+kube-apiserver:
+ifeq (, $(shell which kube-apiserver))
+ifeq (, $(wildcard $(TEST_ASSETS)/kube-apiserver))
+	@{ \
+	set -xe ;\
+	INSTALL_TMP_DIR=$$(mktemp -d) ;\
+	cd $$INSTALL_TMP_DIR ;\
+	wget https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.2/kubebuilder_2.3.2_$(OS_NAME)_amd64.tar.gz ;\
+	mkdir -p $(TEST_ASSETS) ;\
+	tar zxvf kubebuilder_2.3.2_$(OS_NAME)_amd64.tar.gz ;\
+	mv kubebuilder_2.3.2_$(OS_NAME)_amd64/bin/etcd $(TEST_ASSETS)/etcd ;\
+	mv kubebuilder_2.3.2_$(OS_NAME)_amd64/bin/kube-apiserver $(TEST_ASSETS)/kube-apiserver ;\
+	mv kubebuilder_2.3.2_$(OS_NAME)_amd64/bin/kubectl $(TEST_ASSETS)/kubectl ;\
+	rm -rf $$INSTALL_TMP_DIR ;\
+	}
+KUBE_APISERVER_BIN=$(TEST_ASSETS)/kube-apiserver
+else
+KUBE_APISERVER_BIN=$(TEST_ASSETS)/kube-apiserver
+endif
+else
+KUBE_APISERVER_BIN=$(shell which kube-apiserver)
+endif
+
+# find or download kubectl
+kubectl:
+ifeq (, $(shell which kubectl))
+ifeq (, $(wildcard $(TEST_ASSETS)/kubectl))
+	@{ \
+	set -xe ;\
+	INSTALL_TMP_DIR=$$(mktemp -d) ;\
+	cd $$INSTALL_TMP_DIR ;\
+	wget https://github.com/kubernetes-sigs/kubebuilder/releases/download/v2.3.2/kubebuilder_2.3.2_$(OS_NAME)_amd64.tar.gz ;\
+	mkdir -p $(TEST_ASSETS) ;\
+	tar zxvf kubebuilder_2.3.2_$(OS_NAME)_amd64.tar.gz ;\
+	mv kubebuilder_2.3.2_$(OS_NAME)_amd64/bin/etcd $(TEST_ASSETS)/etcd ;\
+	mv kubebuilder_2.3.2_$(OS_NAME)_amd64/bin/kube-apiserver $(TEST_ASSETS)/kube-apiserver ;\
+	mv kubebuilder_2.3.2_$(OS_NAME)_amd64/bin/kubectl $(TEST_ASSETS)/kubectl ;\
+	rm -rf $$INSTALL_TMP_DIR ;\
+	}
+KUBECTL_BIN=$(TEST_ASSETS)/kubectl
+else
+KUBECTL_BIN=$(TEST_ASSETS)/kubectl
+endif
+else
+KUBECTL_BIN=$(shell which kubectl)
+endif

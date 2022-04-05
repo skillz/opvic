@@ -145,8 +145,22 @@ type Regex struct {
 	Result string `json:"result"`
 }
 
+type Version struct {
+	ResourceCount int    `json:"resourceCount"`
+	ResourceKind  string `json:"resourceKind"`
+	ExtractedFrom string `json:"extractedFrom"`
+	Version       string `json:"version"`
+}
+
 // VersionTrackerStatus defines the observed state of VersionTracker
 type VersionTrackerStatus struct {
+	ID                 *string        `json:"id,omitempty"`
+	Namespace          *string        `json:"namespace,omitempty"`
+	TotalResourceCount *int           `json:"totalResourceCount,omitempty"`
+	UniqVersions       []*string      `json:"uniqVersions,omitempty"`
+	Versions           []*Version     `json:"versions,omitempty"`
+	LocalVersion       *LocalVersion  `json:"localVersion,omitempty"`
+	RemoteVersion      *RemoteVersion `json:"remoteVersion,omitempty"`
 }
 
 //+kubebuilder:object:root=true
