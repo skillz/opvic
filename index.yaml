@@ -2,6 +2,27 @@ apiVersion: v1
 entries:
   opvic:
   - apiVersion: v2
+    appVersion: 0.1.2
+    created: "2022-04-05T20:21:17.188647824Z"
+    description: A tool to track and compare the versions of resources running in
+      Kubernetes clusters and their latest available versions from remote sources
+    digest: dcdfc5314246f8974a6df0aea2285f75dd7dba73b7fc101a8d131577a61ad1ad
+    home: https://github.com/skillz/opvic
+    keywords:
+    - kubernetes
+    - observability
+    - version-tracking
+    maintainers:
+    - name: skillz
+      url: https://www.skillz.com/
+    name: opvic
+    sources:
+    - https://github.com/skillz/opvic
+    type: application
+    urls:
+    - https://github.com/skillz/opvic/releases/download/opvic-0.1.2/opvic-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
     appVersion: 0.1.1
     created: "2022-03-09T17:30:26.965063092Z"
     description: A tool to track and compare the versions of resources running in
@@ -43,4 +64,4 @@ entries:
     urls:
     - https://github.com/skillz/opvic/releases/download/opvic-0.1.0/opvic-0.1.0.tgz
     version: 0.1.0
-generated: "2022-03-09T17:30:26.965069492Z"
+generated: "2022-04-05T20:21:17.188676824Z"
