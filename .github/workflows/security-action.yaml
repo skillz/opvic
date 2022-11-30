@@ -7,7 +7,7 @@ jobs:
       SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
       JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
       JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
-    runs-on: [feature/generic, size/sm, env/infra-mgmt, group/default]
+    runs-on: ubuntu-latest
     steps:
       - name: code checkout
         uses: actions/checkout@v3
